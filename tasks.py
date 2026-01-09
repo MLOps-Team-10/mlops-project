@@ -3,7 +3,7 @@ import os
 from invoke import Context, task
 
 WINDOWS = os.name == "nt"
-PROJECT_NAME = "football_match_predictor"
+PROJECT_NAME = "eurosat_classifier"
 PYTHON_VERSION = "3.12"
 
 # Project commands

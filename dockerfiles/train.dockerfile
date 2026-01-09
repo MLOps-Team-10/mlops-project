@@ -9,4 +9,4 @@ COPY src src/
 
 RUN uv sync --frozen
 
-ENTRYPOINT ["uv", "run", "src/football_match_predictor/train.py"]
+ENTRYPOINT ["uv", "run", "src/eurosat_classifier/train.py"]

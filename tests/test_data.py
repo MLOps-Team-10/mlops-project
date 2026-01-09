@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset
 
-from football_match_predictor.data import MyDataset
+from eurosat_classifier.data import MyDataset
 
 
 def test_my_dataset():

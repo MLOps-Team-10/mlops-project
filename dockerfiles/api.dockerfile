@@ -9,4 +9,4 @@ COPY src src/
 
 RUN uv sync --frozen
 
-ENTRYPOINT ["uv", "run", "uvicorn", "src.football_match_predictor.api:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["uv", "run", "uvicorn", "src.eurosat_classifier.api:app", "--host", "0.0.0.0", "--port", "8000"]

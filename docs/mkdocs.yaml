@@ -1,5 +1,5 @@
-site_name: football_match_predictor
-site_author: mlops_team_10
+site_name: eurosat_classifier
+site_author: team10
 docs_dir: source
 
 theme:

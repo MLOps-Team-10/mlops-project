@@ -1,3 +1,3 @@
 ## Documentation
 
-Documentation for football_match_predictor
+Documentation for eurosat_classifier

@@ -1,6 +1,6 @@
-# football_match_predictor
+# eurosat_classifier
 
-Course project for the DTU MLOps course (Winter 2026), focusing on practical MLOps workflows and tooling.
+eurosat_classifier
 
 ## Project structure
 

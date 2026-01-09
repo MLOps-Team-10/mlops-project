@@ -1,5 +1,5 @@
-from football_match_predictor.model import Model
-from football_match_predictor.data import MyDataset
+from eurosat_classifier.model import Model
+from eurosat_classifier.data import MyDataset
 
 def train():
     dataset = MyDataset("data/raw")
