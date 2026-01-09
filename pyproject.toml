@@ -7,7 +7,7 @@ name = "eurosat_classifier"
 version = "0.0.1"
 description = "eurosat_classifier"
 authors = [
-  { name = "MLOps-Team-10", email = "your@email.com" },
+  { name = "team10", email = "your@email.com" },
 ]
 
 keywords = ["machine learning", "MLOps"]
@@ -25,19 +25,20 @@ dependencies = [
     "typer==0.15.1",
     "uvicorn==0.34.0",
     "pylabels>=1.2.1",
-    "hydra-core>=1.3.2",
 ]
 
 [dependency-groups]
 dev = [
     "coverage==7.6.9",
     "invoke==2.2.0",
+    "mkdocs-material==9.4.6",
+    "mkdocs==1.6.1",
     "pre-commit==4.1.0",
     "pytest==8.3.4",
     "ruff==0.1.3",
-    "mypy==1.19.1",
-    "mkdocs-material==9.7.1",
-    "mkdocstrings-python==2.0.1",
+    "mkdocstrings-python==1.12.2",
+    "loguru",
+    "matplotlib"
 ]
 
 
