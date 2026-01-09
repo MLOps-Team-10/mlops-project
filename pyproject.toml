@@ -5,7 +5,7 @@ build-backend = "uv_build"
 [project]
 name = "eurosat_classifier"
 version = "0.0.1"
-description = "Course project for the DTU MLOps course (Winter 2026), focusing on practical MLOps workflows and tooling."
+description = "eurosat_classifier"
 authors = [
   { name = "MLOps-Team-10", email = "your@email.com" },
 ]
