@@ -16,9 +16,8 @@ COPY data/ data/
 WORKDIR /
 RUN uv sync --locked --no-cache --no-install-project
 
-COPY src src/
-COPY README.md README.md
-COPY LICENSE LICENSE
+# Uncomment the following lines to use UV cache for faster builds
+#FROM base AS cached
 
 #ENV UV_LINK_MODE=copy
 #RUN --mount=type=cache,target=/root/.cache/uv uv sync
