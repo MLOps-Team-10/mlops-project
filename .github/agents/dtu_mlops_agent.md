@@ -1,3 +1,4 @@
+
 ---
 name: dtu-mlops-navigator
 description: A specialized TA agent that aligns student projects with the DTU 02476 MLOps course material.
