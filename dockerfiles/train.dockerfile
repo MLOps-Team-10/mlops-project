@@ -20,8 +20,8 @@ RUN uv sync --locked --no-cache --no-install-project
 # Uncomment the following lines to use UV cache for faster builds
 #FROM base AS cached
 
-#ENV UV_LINK_MODE=copy
-#RUN --mount=type=cache,target=/root/.cache/uv uv sync
+ENV UV_LINK_MODE=copy
+RUN --mount=type=cache,target=/root/.cache/uv uv sync
 
 #ENTRYPOINT ["uv", "run", "src/eurosat_classifier/train.py"]
 ENTRYPOINT ["uv", "run", "python", "src/eurosat_classifier/scripts/entrypoint_train.py"]

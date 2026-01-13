@@ -190,15 +190,15 @@ def train(
         running_total = 0
 
         for batch_idx, (images, labels) in enumerate(trainloader):
+            logger.info(f"batch idx: {batch_idx}")
             images, labels = images.to(device), labels.to(device)
-
             optimizer.zero_grad()
             logits = model(images)
             loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
-
             running_loss += loss.item() * images.size(0)
+            logger.info(f"Running loss: {running_loss}")
             preds = logits.argmax(dim=1)
             running_correct += (preds == labels).sum().item()
             running_total += labels.size(0)
