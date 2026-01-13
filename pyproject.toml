@@ -25,6 +25,7 @@ dependencies = [
     "typer==0.15.1",
     "uvicorn==0.34.0",
     "pylabels>=1.2.1",
+    "kagglehub>=0.4.0",
 ]
 
 [dependency-groups]
