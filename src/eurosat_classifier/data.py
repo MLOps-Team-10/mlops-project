@@ -7,20 +7,18 @@ from torchvision import datasets, transforms
 
 
 def get_dataloaders(
-    data_dir: str = "data/raw/rgb",
+    data_dir: str = "data/raw/eurosat/EuroSAT",
     batch_size: int = 64,
     valid_fraction: float = 0.2,
     num_workers: int = 4,
 ) -> Tuple[DataLoader, DataLoader]:
     """Create train and validation dataloaders for EuroSAT RGB.
 
-    Lo stile è lo stesso di 3_Training_Neural_Networks.ipynb:
-    trasformazioni -> dataset -> DataLoader.
+
     """
 
     data_path = Path(data_dir)
 
-    # Trasformazioni in stile notebook, adattate a immagini RGB
     train_transform = transforms.Compose(
         [
             transforms.Resize((224, 224)),
@@ -44,7 +42,6 @@ def get_dataloaders(
         ]
     )
 
-    # Come FashionMNIST, ma qui ImageFolder invece del dataset MNIST
     full_dataset = datasets.ImageFolder(root=str(data_path), transform=train_transform)
 
     # Train / validation split
@@ -52,7 +49,6 @@ def get_dataloaders(
     train_size = len(full_dataset) - valid_size
     train_dataset, valid_dataset = random_split(full_dataset, [train_size, valid_size])
 
-    # Per il validation set usiamo il transform di validazione
     valid_dataset.dataset.transform = valid_transform
 
     trainloader = DataLoader(

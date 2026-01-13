@@ -1,7 +1,9 @@
 from pathlib import Path
 import time
 
+import hydra
 import torch
+from omegaconf import DictConfig
 from torch import nn, optim
 from loguru import logger
 
@@ -44,13 +46,16 @@ def setup_logging() -> None:
 
 
 def train(
-    data_dir: str = "data/raw/rgb",
-    batch_size: int = 128,
-    learning_rate: float = 1e-4,
-    epochs: int = 5,
-    num_workers: int = 4,
-    model_name: str = "resnet18",
-    log_interval: int = 50,
+    data_dir: str ,
+    batch_size: int ,
+    learning_rate: float ,
+    epochs: int ,
+    num_workers: int ,
+    model_name: str ,
+    log_interval: int ,
+    valid_fraction: float ,
+    num_classes: int ,
+    pretrained: bool ,
 ) -> None:
     """
     Train a EuroSAT image classifier.
@@ -79,10 +84,12 @@ def train(
     # Load dataset and create dataloaders.
     # valid_fraction enforces a stable split at the dataloader level (depending on implementation).
     logger.info("Loading dataset and creating dataloaders...")
+
+
     trainloader, validloader = get_dataloaders(
         data_dir=data_dir,
         batch_size=batch_size,
-        valid_fraction=0.2,
+        valid_fraction=valid_fraction,
         num_workers=num_workers,
     )
     logger.info(f"Training samples: {len(trainloader.dataset)}")
@@ -91,7 +98,11 @@ def train(
     # Build the model.
     # timm handles backbone creation and (optionally) pretrained weights.
     logger.info("Building model...")
-    config = ModelConfig(model_name=model_name, num_classes=10, pretrained=True)
+    config = ModelConfig(
+        model_name=model_name,
+        num_classes=num_classes,
+        pretrained=pretrained,
+    )
     model = EuroSATModel(config).to(device)
 
     # Parameter count is a quick sanity check and useful metadata for experiment logs.
@@ -248,5 +259,20 @@ def validate(model, dataloader, criterion, device):
 # Entry point:
 # Allows this module to be imported without starting training,
 # while still supporting `python -m ...` or direct execution.
+@hydra.main(version_base=None, config_path="conf", config_name="config")
+def main(cfg: DictConfig) -> None:
+    train(
+        data_dir=cfg.data.data_dir,
+        batch_size=cfg.data.batch_size,
+        num_workers=cfg.data.num_workers,
+        valid_fraction=cfg.data.valid_fraction,
+        learning_rate=cfg.training.learning_rate,
+        epochs=cfg.training.epochs,
+        log_interval=cfg.training.log_interval,
+        model_name=cfg.model.model_name,
+        num_classes=cfg.model.num_classes,
+        pretrained=cfg.model.pretrained,
+    )
+
 if __name__ == "__main__":
-    train()
+    main()
