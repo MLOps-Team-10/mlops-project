@@ -4,6 +4,7 @@ set -euo pipefail
 IMAGE_NAME="train:latest"
 #syncing uv
 uv sync
+RUN chmod -R a+rX /app/.venv
 # build
 docker build -f dockerfiles/train.dockerfile -t "${IMAGE_NAME}" .
 
