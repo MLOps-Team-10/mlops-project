@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 
 from eurosat_classifier.data import get_dataloaders
 from eurosat_classifier.model import EuroSATModel, ModelConfig
-from eurosat_classifier.scripts.download_data import ensure_eurosat, ensure_eurosat_rgb
+from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb
 
 
 def setup_logging(logs_dir: Path) -> None:
@@ -130,7 +130,6 @@ def train(
     - Logs go to both console (INFO) and file (DEBUG) for auditability.
     - Checkpointing stores minimal metadata needed for later reload.
     """
-    setup_logging(logs_dir)
 
     logger.info("=" * 80)
     logger.info("INITIALIZING TRAINING")
@@ -271,6 +270,12 @@ def main(cfg: DictConfig) -> None:
 
     # Download/copy dataset only if missing (idempotent)
     ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
+    #guarantee config and bootstrap match
+    expected = (repo_root / "data" / "raw" / "EuroSAT").resolve()
+    if data_dir != expected:
+        raise ValueError(
+            f"Hydra data.data_dir={data_dir} does not match expected EuroSAT RGB dir {expected}"
+        )
     train(
         data_dir=str(data_dir),  # absolute resolved path
         batch_size=cfg.data.batch_size,
