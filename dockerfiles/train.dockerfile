@@ -9,7 +9,9 @@ WORKDIR /app
 # cross-platform (Windows / Mac / Linux)
 ENV HOME=/tmp
 ENV UV_CACHE_DIR=/tmp/uv-cache
-RUN mkdir -p /tmp/uv-cache
+
+# Make the cache dir writable for any runtime UID (when using `docker run -u ...`)
+RUN mkdir -p /tmp/uv-cache && chmod -R 777 /tmp/uv-cache
 
 COPY uv.lock uv.lock
 COPY pyproject.toml pyproject.toml
