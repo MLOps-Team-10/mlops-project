@@ -2,7 +2,8 @@
 set -euo pipefail
 
 IMAGE_NAME="train:latest"
-
+#syncing uv
+uv sync
 # build
 docker build -f dockerfiles/train.dockerfile -t "${IMAGE_NAME}" .
 
