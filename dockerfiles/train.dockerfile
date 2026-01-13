@@ -7,13 +7,15 @@ RUN apt update && \
 
 
 
+WORKDIR /app
+
+
 COPY uv.lock uv.lock
 COPY pyproject.toml pyproject.toml
 COPY README.md README.md
 COPY src/ src/
 COPY data/ data/
 
-WORKDIR /
 RUN uv sync --locked --no-cache --no-install-project
 
 # Uncomment the following lines to use UV cache for faster builds
@@ -22,7 +24,7 @@ RUN uv sync --locked --no-cache --no-install-project
 #ENV UV_LINK_MODE=copy
 #RUN --mount=type=cache,target=/root/.cache/uv uv sync
 
-ENTRYPOINT ["uv", "run", "src/eurosat_classifier/train.py"]
-
+#ENTRYPOINT ["uv", "run", "src/eurosat_classifier/train.py"]
+ENTRYPOINT ["uv", "run", "python", "src/eurosat_classifier/scripts/entrypoint_train.py"]
 #to search inside the image
 #docker run --rm -it --entrypoint sh {image_name}:{image_tag}
