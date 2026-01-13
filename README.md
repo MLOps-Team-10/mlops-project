@@ -1,11 +1,11 @@
-````markdown
+
 
 # eurosat_classifier
 
 Course project for the DTU MLOps course (Winter 2026), focusing on practical MLOps workflows and tooling.
 
 ## Project Description
-git
+
 The overall goal of this project is to design, train, and deploy an end-to-end land use and land cover (LULC) classification system based on satellite imagery, while applying modern MLOps practices. The final deliverable will be a reproducible and deployable machine learning pipeline that includes data versioning, experiment tracking, model training, evaluation, and deployment. Beyond model performance, the project emphasizes maintainability, monitoring, and scalability, which are key objectives of MLOps.
 
 Land use classification from satellite imagery has many real-world applications. Such a classifier can be used to track urban development and land expansion over time, supporting urban planning and infrastructure decision-making. It is also relevant for environmental monitoring, including deforestation tracking, detection of land degradation, and analysis of agricultural land use. These applications directly contribute to monitoring progress toward the United Nations Sustainable Development Goals (SDGs), such as sustainable cities, climate action, and responsible land use. Additionally, land use classifiers can support disaster management scenarios, for example by identifying regions at risk of forest fires or assessing post-disaster land changes.
@@ -185,4 +185,4 @@ Created using [mlops_template](https://github.com/SkafteNicki/mlops_template),
 a [cookiecutter template](https://github.com/cookiecutter/cookiecutter) for getting
 started with Machine Learning Operations (MLOps).
 
-````
+
