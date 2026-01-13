@@ -23,45 +23,45 @@ return the checklist with completed items marked with an "x" and incomplete item
 indicates what module the bullet point is related to.
 
 ### Week 1
- - [ ]  [CORE M5](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/git/) Create a git repository (M5) 
+ - [x]  [CORE M5](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/git/) Create a git repository (M5) 
 
-- [ ]  [CORE M5](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/git/) Make sure that all team members have write access to the GitHub repository (M5)
+- [x]  [CORE M5](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/git/) Make sure that all team members have write access to the GitHub repository (M5)
 
- - [ ] [CORE M2](https://skaftenicki.github.io/dtu_mlops/s1_development_environment/package_manager/) Create a dedicated environment for you project to keep track of your packages (M2)
+ - [x] [CORE M2](https://skaftenicki.github.io/dtu_mlops/s1_development_environment/package_manager/) Create a dedicated environment for you project to keep track of your packages (M2)
 
-* [ ] [CORE M6](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/code_structure/) Create the initial file structure using cookiecutter with an appropriate template (M6)
+* [x] [CORE M6](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/code_structure/) Create the initial file structure using cookiecutter with an appropriate template (M6)
 
-* [ ] [CORE M6](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/code_structure/) Fill out the `data.py` file such that it downloads whatever data you need and preprocesses it (if necessary) (M6)
+* [x] [CORE M6](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/code_structure/) Fill out the `data.py` file such that it downloads whatever data you need and preprocesses it (if necessary) (M6)
 
-- [ ]  [CORE M6](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/code_structure/) Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
+- [x]  [CORE M6](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/code_structure/) Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
 
-* [ ] [CORE M2](https://skaftenicki.github.io/dtu_mlops/s1_development_environment/package_manager/) Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you are using (M2+M6)
+* [x] [CORE M2](https://skaftenicki.github.io/dtu_mlops/s1_development_environment/package_manager/) Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you are using (M2+M6)
 
-* [ ] [OPT M7](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/good_coding_practice/)Remember to comply with good coding practices (`pep8`) while doing the project (M7)
+* [x] [OPT M7](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/good_coding_practice/)Remember to comply with good coding practices (`pep8`) while doing the project (M7)
 
-* [ ] [OPT M7](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/good_coding_practice/) Do a bit of code typing and remember to document essential parts of your code (M7)
+* [x] [OPT M7](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/good_coding_practice/) Do a bit of code typing and remember to document essential parts of your code (M7)
 
-* [ ] [CORE M8](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/dvc/) Setup version control for your data or part of your data (M8)
+* [x] [CORE M8](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/dvc/) Setup version control for your data or part of your data (M8)
 
-* [ ] [OPT M9](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/cli/) Add command line interfaces and project commands to your code where it makes sense (M9)
+* [x] [OPT M9](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/cli/) Add command line interfaces and project commands to your code where it makes sense (M9)
 
-* [ ] [CORE M10](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/dvc/) Construct one or multiple docker files for your code (M10)
+* [x] [CORE M10](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/dvc/) Construct one or multiple docker files for your code (M10)
 
-* [ ] [CORE M10](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/dvc/) Build the docker files locally and make sure they work as intended (M10)
+* [x] [CORE M10](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/dvc/) Build the docker files locally and make sure they work as intended (M10)
 
 * [ ] [OPT M11](https://skaftenicki.github.io/dtu_mlops/s3_reproducibility/config_files/) Write one or multiple configurations files for your experiments (M11)
 
-* [ ] [OPT M11](https://skaftenicki.github.io/dtu_mlops/s3_reproducibility/config_files/) Used Hydra to load the configurations and manage your hyperparameters (M11)
+* [x] [OPT M11](https://skaftenicki.github.io/dtu_mlops/s3_reproducibility/config_files/) Used Hydra to load the configurations and manage your hyperparameters (M11)
 
 * [ ] [CORE M13](https://skaftenicki.github.io/dtu_mlops/s4_debugging_and_logging/profiling/) Use profiling to optimize your code (M13)
 
-* [ ] [CORE M14](https://skaftenicki.github.io/dtu_mlops/s4_debugging_and_logging/logging/) Use logging to log important events in your code (M14)
+* [x] [CORE M14](https://skaftenicki.github.io/dtu_mlops/s4_debugging_and_logging/logging/) Use logging to log important events in your code (M14)
 
 * [ ] [CORE M14](https://skaftenicki.github.io/dtu_mlops/s4_debugging_and_logging/logging/) Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
 
-* [ ] [CORE M14](https://skaftenicki.github.io/dtu_mlops/s4_debugging_and_logging/logging/) Consider running a hyperparameter optimization sweep (M14)
+* [x] [CORE M14](https://skaftenicki.github.io/dtu_mlops/s4_debugging_and_logging/logging/) Consider running a hyperparameter optimization sweep (M14)
 
-* [ ] [OPT M15](https://skaftenicki.github.io/dtu_mlops/s4_debugging_and_logging/boilerplate/) Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)
+* [x] [OPT M15](https://skaftenicki.github.io/dtu_mlops/s4_debugging_and_logging/boilerplate/) Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)
 
 ### Week 2
 
