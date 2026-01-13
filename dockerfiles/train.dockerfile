@@ -21,4 +21,6 @@ COPY data/ data/
 
 RUN uv sync --locked --no-cache --no-install-project
 
+RUN chmod -R a+rX /app/.venv
+
 ENTRYPOINT ["uv", "run", "python", "src/eurosat_classifier/scripts/entrypoint_train.py"]
