@@ -11,6 +11,5 @@ docker build -f dockerfiles/train.dockerfile -t "${IMAGE_NAME}" .
 docker run --rm \
   --name train \
   --shm-size=2g \
-  -u "$(id -u):$(id -g)" \
   -v "$(pwd)/data:/app/data" \
   "${IMAGE_NAME}"

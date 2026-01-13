@@ -271,7 +271,7 @@ def main(cfg: DictConfig) -> None:
     # Download/copy dataset only if missing (idempotent)
     ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
     #guarantee config and bootstrap match
-    expected = (repo_root / "data" / "raw" / "EuroSAT").resolve()
+    expected = (repo_root / "data" / "raw" / "eurosat_rgb").resolve()
     if data_dir != expected:
         raise ValueError(
             f"Hydra data.data_dir={data_dir} does not match expected EuroSAT RGB dir {expected}"
