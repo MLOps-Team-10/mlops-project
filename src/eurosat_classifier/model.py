@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 
+import hydra
 import timm
 import torch
 import torch.nn as nn
+from omegaconf import DictConfig
 
 
 @dataclass
@@ -11,11 +13,11 @@ class ModelConfig:
     Configuration container for the model.
 
     Using a dataclass makes the configuration:
-    - explicit and self-documented
-    - easy to serialize (e.g. for experiments, YAML/JSON configs)
+    - explicit and self documented
+    - easy to serialize (for experiments, YAML or JSON configs)
     - simple to extend without touching model logic
     """
-    model_name: str = "resnet18"
+    model_name: str
     num_classes: int = 10
     pretrained: bool = True
 
@@ -61,28 +63,37 @@ class EuroSATModel(nn.Module):
         Note:
             Softmax is intentionally NOT applied here.
             This allows the use of nn.CrossEntropyLoss, which expects logits
-            and applies log-softmax internally for numerical stability.
+            and applies log softmax internally for numerical stability.
         """
         return self.backbone(x)
 
 
-# The following block is executed only when running this file directly.
-# It acts as a lightweight sanity check for the model definition.
-#
-# This is useful in MLOps pipelines to:
-# - validate model wiring
-# - catch shape mismatches early
-# - ensure that refactoring does not silently break the forward pass
-if __name__ == "__main__":
-    cfg = ModelConfig()
-    model = EuroSATModel(cfg)
+@hydra.main(version_base=None, config_path="conf/model", config_name="resnet18")
+def main(cfg: DictConfig) -> None:
+    """
+    Hydra entry point.
 
-    # Simulate a small batch of RGB images (e.g. from EuroSAT)
-    # Shape: (batch_size=2, channels=3, height=224, width=224)
+    cfg is a DictConfig loaded from conf/model/resnet18.yaml.
+    We convert it to a strongly typed dataclass for type safety and clarity.
+    """
+
+    # Convert Hydra config to dataclass
+    config = ModelConfig(
+        model_name=cfg.model_name,
+        num_classes=cfg.num_classes,
+        pretrained=cfg.pretrained,
+    )
+
+    model = EuroSATModel(config)
+
+    # Simulate a small batch of RGB images (for a quick sanity check)
     x = torch.rand(2, 3, 224, 224)
 
-    # Forward pass to verify that the model runs end-to-end
+    # Forward pass to verify that the model runs end to end
     logits = model(x)
 
-    # Expected output shape: (2, num_classes)
-    print("Output shape:", logits.shape)  # [2, 10]
+    print("Output shape:", logits.shape)  # Expected: [2, num_classes]
+
+
+if __name__ == "__main__":
+    main()
