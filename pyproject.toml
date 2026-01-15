@@ -63,4 +63,9 @@ explicit = true
 line-length = 120
 
 [tool.coverage.run]
-omit = ["tests/*"]
+source = ["src"]
+relative_files = true
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
