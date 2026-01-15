@@ -18,8 +18,8 @@ def test_get_dataloaders_with_real_data():
     # Use the default configuration (points to the real dataset)
     cfg = DataConfig()
 
-    cfg.num_workers=0  # For test stability across environments
-    cfg.batch_size=16  # Smaller batch size for testing
+    cfg.num_workers = 0  # For test stability across environments
+    cfg.batch_size = 16  # Smaller batch size for testing
 
     data_path = Path(cfg.data_dir)
 

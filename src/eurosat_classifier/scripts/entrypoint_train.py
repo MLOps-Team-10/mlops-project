@@ -4,11 +4,7 @@ from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb
 
 
 def main() -> None:
-
-    cmd = [
-        "python",
-        "src/eurosat_classifier/train.py"
-    ]
+    cmd = ["python", "src/eurosat_classifier/train.py"]
     raise SystemExit(subprocess.call(cmd))
 
 

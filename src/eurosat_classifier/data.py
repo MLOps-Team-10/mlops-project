@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Tuple
 
-import torch
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
 
@@ -15,6 +14,7 @@ class DataConfig:
     This keeps all data related hyperparameters in one place and makes it
     easy to pass them around or serialize them in configs.
     """
+
     data_dir: str = "data/raw/eurosat/EuroSAT"
     batch_size: int = 64
     valid_fraction: float = 0.2

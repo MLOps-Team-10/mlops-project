@@ -17,6 +17,7 @@ class ModelConfig:
     - easy to serialize (for experiments, YAML or JSON configs)
     - simple to extend without touching model logic
     """
+
     model_name: str
     num_classes: int = 10
     pretrained: bool = True

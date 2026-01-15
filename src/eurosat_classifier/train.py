@@ -46,8 +46,7 @@ def setup_logging(logs_dir: Path) -> None:
         rotation="10 MB",
         retention="10 days",
         level="DEBUG",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | "
-        "{name}:{function}:{line} - {message}",
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | " "{name}:{function}:{line} - {message}",
     )
 
 
@@ -204,10 +203,7 @@ def train(
             running_total += labels.size(0)
 
             if batch_idx % log_interval == 0:
-                logger.debug(
-                    f"[Epoch {epoch + 1}] Batch {batch_idx}/{len(trainloader)} | "
-                    f"Loss: {loss.item():.4f}"
-                )
+                logger.debug(f"[Epoch {epoch + 1}] Batch {batch_idx}/{len(trainloader)} | " f"Loss: {loss.item():.4f}")
 
         train_loss = running_loss / running_total
         train_acc = running_correct / running_total
@@ -270,12 +266,10 @@ def main(cfg: DictConfig) -> None:
 
     # Download/copy dataset only if missing (idempotent)
     ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
-    #guarantee config and bootstrap match
+    # guarantee config and bootstrap match
     expected = (repo_root / "data" / "raw" / "eurosat_rgb").resolve()
     if data_dir != expected:
-        raise ValueError(
-            f"Hydra data.data_dir={data_dir} does not match expected EuroSAT RGB dir {expected}"
-        )
+        raise ValueError(f"Hydra data.data_dir={data_dir} does not match expected EuroSAT RGB dir {expected}")
     train(
         data_dir=str(data_dir),  # absolute resolved path
         batch_size=cfg.data.batch_size,
