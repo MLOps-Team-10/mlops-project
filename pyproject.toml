@@ -29,6 +29,7 @@ dependencies = [
     "hydra-core",
     "pytorch-lightning",
     "dvc>=3.66.1",
+    "mypy>=1.19.1",
 ]
 
 [dependency-groups]

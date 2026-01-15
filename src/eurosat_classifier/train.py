@@ -46,7 +46,7 @@ def setup_logging(logs_dir: Path) -> None:
         rotation="10 MB",
         retention="10 days",
         level="DEBUG",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | " "{name}:{function}:{line} - {message}",
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {name}:{function}:{line} - {message}",
     )
 
 
@@ -203,7 +203,7 @@ def train(
             running_total += labels.size(0)
 
             if batch_idx % log_interval == 0:
-                logger.debug(f"[Epoch {epoch + 1}] Batch {batch_idx}/{len(trainloader)} | " f"Loss: {loss.item():.4f}")
+                logger.debug(f"[Epoch {epoch + 1}] Batch {batch_idx}/{len(trainloader)} | Loss: {loss.item():.4f}")
 
         train_loss = running_loss / running_total
         train_acc = running_correct / running_total
