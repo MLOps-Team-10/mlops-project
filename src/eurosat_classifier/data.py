@@ -1,29 +1,94 @@
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Tuple
 
-import typer
-from torch.utils.data import Dataset
-
-
-class MyDataset(Dataset):
-    """My custom dataset."""
-
-    def __init__(self, data_path: Path) -> None:
-        self.data_path = data_path
-
-    def __len__(self) -> int:
-        """Return the length of the dataset."""
-
-    def __getitem__(self, index: int):
-        """Return a given sample from the dataset."""
-
-    def preprocess(self, output_folder: Path) -> None:
-        """Preprocess the raw data and save it to the output folder."""
-
-def preprocess(data_path: Path, output_folder: Path) -> None:
-    print("Preprocessing data...")
-    dataset = MyDataset(data_path)
-    dataset.preprocess(output_folder)
+import torch
+from torch.utils.data import DataLoader, random_split
+from torchvision import datasets, transforms
 
 
-if __name__ == "__main__":
-    typer.run(preprocess)
+@dataclass
+class DataConfig:
+    """
+    Configuration container for the EuroSAT dataloaders.
+
+    This keeps all data related hyperparameters in one place and makes it
+    easy to pass them around or serialize them in configs.
+    """
+    data_dir: str = "data/raw/eurosat/EuroSAT"
+    batch_size: int = 64
+    valid_fraction: float = 0.2
+    num_workers: int = 4
+
+
+def get_dataloaders(config: DataConfig) -> Tuple[DataLoader, DataLoader]:
+    """
+    Create train and validation dataloaders for EuroSAT RGB.
+
+    Args:
+        config (DataConfig): Data configuration with paths and hyperparameters.
+
+    Returns:
+        Tuple[DataLoader, DataLoader]:
+            - train dataloader
+            - validation dataloader
+    """
+    data_path = Path(config.data_dir)
+
+    # Transformations for the training split
+    train_transform = transforms.Compose(
+        [
+            transforms.Resize((224, 224)),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+            ),
+        ]
+    )
+
+    # Transformations for the validation split (deterministic, no augmentation)
+    valid_transform = transforms.Compose(
+        [
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+            ),
+        ]
+    )
+
+    # Load the full dataset using ImageFolder
+    full_dataset = datasets.ImageFolder(root=str(data_path), transform=train_transform)
+
+    # Compute sizes for train and validation splits
+    valid_size = int(len(full_dataset) * config.valid_fraction)
+    train_size = len(full_dataset) - valid_size
+
+    # Randomly split the dataset into train and validation subsets
+    train_dataset, valid_dataset = random_split(full_dataset, [train_size, valid_size])
+
+    # Use the validation transform on the validation subset
+    valid_dataset.dataset.transform = valid_transform
+
+    # Build the training dataloader
+    trainloader = DataLoader(
+        train_dataset,
+        batch_size=config.batch_size,
+        shuffle=True,
+        num_workers=config.num_workers,
+        pin_memory=True,
+    )
+
+    # Build the validation dataloader
+    validloader = DataLoader(
+        valid_dataset,
+        batch_size=config.batch_size,
+        shuffle=False,
+        num_workers=config.num_workers,
+        pin_memory=True,
+    )
+
+    return trainloader, validloader

@@ -65,6 +65,7 @@ indicates what module the bullet point is related to.
 
 ### Week 2
 
+
 * [ ] [CORE M16](https://skaftenicki.github.io/dtu_mlops/s5_continuous_integration/unittesting/) Write unit tests related to the data part of your code (M16)
 
 * [ ] [CORE M16](https://skaftenicki.github.io/dtu_mlops/s5_continuous_integration/unittesting/) Write unit tests related to model construction and or model training (M16)

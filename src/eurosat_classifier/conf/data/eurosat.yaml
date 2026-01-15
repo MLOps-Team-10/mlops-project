@@ -1,0 +1,4 @@
+data_dir: "data/raw/eurosat_rgb"
+batch_size: 128
+num_workers: 4
+valid_fraction: 0.2
