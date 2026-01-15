@@ -2,7 +2,7 @@ name: "Run linting"
 
 on:
   push:
-    branches: [ fest/eurosat ]
+    branches: [ feat/eurosat ]
   pull_request:
     branches: [ main ]
 
