@@ -42,7 +42,7 @@ dev = [
     "ruff==0.1.3",
     "mkdocstrings-python==1.12.2",
     "loguru",
-    "matplotlib"
+    "matplotlib",
 ]
 
 
