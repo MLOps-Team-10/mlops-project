@@ -75,25 +75,11 @@ skip_empty = true
 python_version = "3.12"
 mypy_path = "src"
 packages = ["eurosat_classifier"]
-
-# ML-friendly defaults: don't fail on missing stubs for 3rd party libs
-ignore_missing_imports = true
-
-# Keep CI useful: still report real mistakes in *your* code
-warn_unused_ignores = true
-warn_redundant_casts = true
-warn_unreachable = true
-no_implicit_optional = true
-
-# Reduce noise
 show_error_codes = true
 pretty = true
-
-# If you want even more "docile", uncomment:
-# check_untyped_defs = false
-# disallow_untyped_defs = false
-
-# Optional: avoid scanning caches/build outputs
+no_implicit_optional = true
+warn_unused_ignores = true
+warn_unreachable = true
 exclude = [
   "data/",
   "models/",
@@ -104,3 +90,14 @@ exclude = [
   ".venv/",
   "__pycache__/",
 ]
+
+[[tool.mypy.overrides]]
+module = [
+  "torch.*",
+  "torchvision.*",
+  "kagglehub.*",
+  "timm.*",
+  "pytorch_lightning.*",
+  "hydra.*",
+]
+ignore_missing_imports = true
