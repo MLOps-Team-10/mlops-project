@@ -29,6 +29,9 @@ dependencies = [
     "hydra-core",
     "pytorch-lightning",
     "dvc>=3.66.1",
+    "loguru>=0.7.3",
+    "python-dotenv>=1.2.1",
+    "wandb>=0.24.0",
 ]
 
 [dependency-groups]

@@ -178,3 +178,6 @@ cython_debug/
 
 # Ignore EuroSAT raw data subfolders
 data/raw/eurosat_rgb/
+
+#API Wandb
+WANDB_API_KEY= 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

@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 
 from pathlib import Path
 from typing import Tuple
@@ -16,6 +17,9 @@ from torch.utils.data import DataLoader
 from eurosat_classifier.data import get_dataloaders
 from eurosat_classifier.model import EuroSATModel, ModelConfig
 from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb
+import wandb
+from dotenv import load_dotenv
+
 
 
 def setup_logging(logs_dir: Path) -> None:
@@ -197,9 +201,16 @@ def train(
             loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
+            preds = logits.argmax(dim=1)
+            batch_acc = (preds == labels).float().mean().item()
+            wandb.log({
+                "train/batch_loss": loss.item(),
+                "train/batch_accuracy": batch_acc
+            })
+
+
             running_loss += loss.item() * images.size(0)
             logger.info(f"Running loss: {running_loss}")
-            preds = logits.argmax(dim=1)
             running_correct += (preds == labels).sum().item()
             running_total += labels.size(0)
 
@@ -219,6 +230,13 @@ def train(
 
         logger.info("Running validation...")
         valid_loss, valid_acc = validate(model, validloader, criterion, device)
+        wandb.log({
+            "train/epoch_loss": train_loss,
+            "train/epoch_accuracy": train_acc,
+            "val/loss": valid_loss,
+            "val/accuracy": valid_acc,
+            "epoch": epoch + 1
+        })
 
         logger.info(f"Validation loss: {valid_loss:.4f}")
         logger.info(f"Validation accuracy: {valid_acc:.4f}")
@@ -256,6 +274,7 @@ def main(cfg: DictConfig) -> None:
     - We anchor all important paths to repo_root (original cwd).
     """
     repo_root = Path(get_original_cwd())
+    load_dotenv(repo_root / ".env")
     logs_dir = repo_root / "logs"
     models_dir = repo_root / "models"
 
@@ -264,6 +283,12 @@ def main(cfg: DictConfig) -> None:
 
     # Configure logging before emitting any log lines
     setup_logging(logs_dir)
+    wandb.init(
+        project=os.getenv("WANDB_PROJECT", "test_run"),
+        entity=os.getenv("WANDB_ENTITY", "mirmushfiqulhaque"),
+        #entity=os.getenv("WANDB_ENTITY"),
+        config=OmegaConf.to_container(cfg, resolve=True)
+    )
 
     logger.info("Hydra config:\n" + OmegaConf.to_yaml(cfg))
     logger.info(f"Resolved data_dir: {data_dir}")
@@ -276,6 +301,7 @@ def main(cfg: DictConfig) -> None:
         raise ValueError(
             f"Hydra data.data_dir={data_dir} does not match expected EuroSAT RGB dir {expected}"
         )
+    
     train(
         data_dir=str(data_dir),  # absolute resolved path
         batch_size=cfg.data.batch_size,
@@ -290,6 +316,7 @@ def main(cfg: DictConfig) -> None:
         logs_dir=logs_dir,
         models_dir=models_dir,
     )
+    wandb.finish()
 
 
 if __name__ == "__main__":
