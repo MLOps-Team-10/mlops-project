@@ -70,3 +70,37 @@ relative_files = true
 [tool.coverage.report]
 show_missing = true
 skip_empty = true
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+packages = ["eurosat_classifier"]
+
+# ML-friendly defaults: don't fail on missing stubs for 3rd party libs
+ignore_missing_imports = true
+
+# Keep CI useful: still report real mistakes in *your* code
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unreachable = true
+no_implicit_optional = true
+
+# Reduce noise
+show_error_codes = true
+pretty = true
+
+# If you want even more "docile", uncomment:
+# check_untyped_defs = false
+# disallow_untyped_defs = false
+
+# Optional: avoid scanning caches/build outputs
+exclude = [
+  "data/",
+  "models/",
+  "outputs/",
+  "logs/",
+  "lightning_logs/",
+  "docs/",
+  ".venv/",
+  "__pycache__/",
+]
