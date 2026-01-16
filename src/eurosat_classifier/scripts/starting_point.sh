@@ -12,4 +12,5 @@ docker run --rm \
   --name train \
   --shm-size=2g \
   -v "$(pwd)/data:/app/data" \
+  -e WANDB_MODE=offline \
   "${IMAGE_NAME}"
