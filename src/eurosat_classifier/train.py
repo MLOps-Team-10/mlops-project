@@ -21,7 +21,6 @@ import wandb
 from dotenv import load_dotenv
 
 
-
 def setup_logging(logs_dir: Path) -> None:
     """
     Configure loguru for both console and file logging.
@@ -153,14 +152,14 @@ def train(
         valid_fraction=valid_fraction,
         num_workers=num_workers,
     )
-    trainloader, validloader= get_dataloaders(config=data_config)
+    trainloader, validloader = get_dataloaders(config=data_config)
 
-    #trainloader, validloader = get_dataloaders(
-        #data_dir=data_dir,
-        #batch_size=batch_size,
-        #valid_fraction=valid_fraction,
-        #num_workers=num_workers,
-    #)
+    # trainloader, validloader = get_dataloaders(
+    # data_dir=data_dir,
+    # batch_size=batch_size,
+    # valid_fraction=valid_fraction,
+    # num_workers=num_workers,
+    # )
 
     logger.info(f"Training samples: {len(trainloader.dataset)}")
     logger.info(f"Validation samples: {len(validloader.dataset)}")
@@ -213,14 +212,11 @@ def train(
             optimizer.step()
             preds = logits.argmax(dim=1)
             batch_acc = (preds == labels).float().mean().item()
-            wandb.log({
-                "train/batch_loss": loss.item(),
-                "train/batch_accuracy": batch_acc
-            })
+            wandb.log({"train/batch_loss": loss.item(), "train/batch_accuracy": batch_acc})
 
             running_loss += loss.item() * images.size(0)
             logger.info(f"Running loss: {running_loss}")
-            
+
             running_correct += (preds == labels).sum().item()
             running_total += labels.size(0)
 
@@ -290,8 +286,8 @@ def main(cfg: DictConfig) -> None:
     setup_logging(logs_dir)
     wandb.init(
         project=os.getenv("WANDB_PROJECT"),
-        entity=os.getenv("WANDB_ENTITY"), 
-        config=OmegaConf.to_container(cfg, resolve=True)
+        entity=os.getenv("WANDB_ENTITY"),
+        config=OmegaConf.to_container(cfg, resolve=True),
     )
 
     logger.info("Hydra config:\n" + OmegaConf.to_yaml(cfg))
