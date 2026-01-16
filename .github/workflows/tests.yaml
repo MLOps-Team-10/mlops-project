@@ -18,6 +18,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.11", "3.12"]
+    env:
+      WANDB_PROJECT: ${{ vars.WANDB_PROJECT }}
+      WANDB_ENTITY: ${{ vars.WANDB_ENTITY }}
+      WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
 
     steps:
       - name: Checkout
