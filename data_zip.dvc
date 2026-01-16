@@ -1,0 +1,6 @@
+outs:
+- md5: 09eafd7c70e98c259cca4ea942237526.dir
+  size: 95312666
+  nfiles: 1
+  hash: md5
+  path: data_zip
