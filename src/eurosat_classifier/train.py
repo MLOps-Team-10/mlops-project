@@ -138,6 +138,10 @@ def train(
     logger.info("INITIALIZING TRAINING")
     logger.info("=" * 80)
 
+    # Initialize wandb if not already done (for standalone train() calls, e.g., in tests)
+    if not wandb.run:
+        wandb.init(mode="disabled")
+
     device = select_device()
     logger.info(f"Device selected: {device}")
 
