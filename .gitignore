@@ -178,3 +178,9 @@ cython_debug/
 
 # Ignore EuroSAT raw data subfolders
 data/raw/eurosat_rgb/
+
+# Wandb output
+wandb/
+
+# Output folder
+outputs/
