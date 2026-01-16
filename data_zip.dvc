@@ -1,6 +1,11 @@
 outs:
-- md5: 10882bd36e469d428927ad88b6937301.dir
-  size: 94826396
-  nfiles: 1
-  hash: md5
+- hash: md5
   path: data_zip
+  files:
+  - relpath: eurosat_rgb.zip
+    md5: 1b8139b6a0fd20ad3ed22c9834b84dc0
+    size: 94826396
+    cloud:
+      remote_storage:
+        etag: 08dee4a6a9969092031001
+        version_id: '1768570445476446'
