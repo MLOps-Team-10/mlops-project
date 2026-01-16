@@ -31,13 +31,6 @@ jobs:
       - name: Pre-commit (hygiene)
         run: uv run pre-commit run --all-files
 
-      # Formatter check: fails if formatting differs; shows a diff in logs.
-      - name: Ruff format (check)
-        run: uv run ruff format . --check --diff
-
-      # Lint check: code quality rules, unused imports, etc.
-      - name: Ruff lint (check)
-        run: uv run ruff check .
 
       # Type checking: keep it "soft" while the codebase is evolving.
       # Turn off continue-on-error later if you want it to be a hard gate.

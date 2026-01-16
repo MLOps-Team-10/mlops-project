@@ -39,8 +39,7 @@ class EuroSATDataModule(pl.LightningDataModule):
         self.num_workers = num_workers
 
         # These will be populated in setup().
-        train_dataset: Optional[Subset] = None
-        valid_dataset: Optional[Subset] = None
+
 
         # Training-time transforms.
         # Includes data augmentation to improve generalization.
