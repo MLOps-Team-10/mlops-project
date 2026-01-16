@@ -14,7 +14,7 @@ from omegaconf import DictConfig, OmegaConf
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
-from eurosat_classifier.data import get_dataloaders,DataConfig
+from eurosat_classifier.data import get_dataloaders, DataConfig
 from eurosat_classifier.model import EuroSATModel, ModelConfig
 from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb
 import wandb
@@ -50,8 +50,7 @@ def setup_logging(logs_dir: Path) -> None:
         rotation="10 MB",
         retention="10 days",
         level="DEBUG",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | "
-        "{name}:{function}:{line} - {message}",
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {name}:{function}:{line} - {message}",
     )
 
 
@@ -215,17 +214,14 @@ def train(
                 "train/batch_accuracy": batch_acc
             })
 
-
             running_loss += loss.item() * images.size(0)
             logger.info(f"Running loss: {running_loss}")
+            
             running_correct += (preds == labels).sum().item()
             running_total += labels.size(0)
 
             if batch_idx % log_interval == 0:
-                logger.debug(
-                    f"[Epoch {epoch + 1}] Batch {batch_idx}/{len(trainloader)} | "
-                    f"Loss: {loss.item():.4f}"
-                )
+                logger.debug(f"[Epoch {epoch + 1}] Batch {batch_idx}/{len(trainloader)} | Loss: {loss.item():.4f}")
 
         train_loss = running_loss / running_total
         train_acc = running_correct / running_total
@@ -237,13 +233,6 @@ def train(
 
         logger.info("Running validation...")
         valid_loss, valid_acc = validate(model, validloader, criterion, device)
-        wandb.log({
-            "train/epoch_loss": train_loss,
-            "train/epoch_accuracy": train_acc,
-            "val/loss": valid_loss,
-            "val/accuracy": valid_acc,
-            "epoch": epoch + 1
-        })
 
         logger.info(f"Validation loss: {valid_loss:.4f}")
         logger.info(f"Validation accuracy: {valid_acc:.4f}")
@@ -296,10 +285,9 @@ def main(cfg: DictConfig) -> None:
     # Configure logging before emitting any log lines
     setup_logging(logs_dir)
     wandb.init(
-        
-    project=os.getenv("WANDB_PROJECT"),
-    entity=os.getenv("WANDB_ENTITY"), 
-    config=OmegaConf.to_container(cfg, resolve=True)
+        project=os.getenv("WANDB_PROJECT"),
+        entity=os.getenv("WANDB_ENTITY"), 
+        config=OmegaConf.to_container(cfg, resolve=True)
     )
 
     logger.info("Hydra config:\n" + OmegaConf.to_yaml(cfg))
@@ -307,13 +295,10 @@ def main(cfg: DictConfig) -> None:
 
     # Download/copy dataset only if missing (idempotent)
     ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
-    #guarantee config and bootstrap match
+    # guarantee config and bootstrap match
     expected = (repo_root / "data" / "raw" / "eurosat_rgb").resolve()
     if data_dir != expected:
-        raise ValueError(
-            f"Hydra data.data_dir={data_dir} does not match expected EuroSAT RGB dir {expected}"
-        )
-    
+        raise ValueError(f"Hydra data.data_dir={data_dir} does not match expected EuroSAT RGB dir {expected}")
     train(
         data_dir=str(data_dir),  # absolute resolved path
         batch_size=cfg.data.batch_size,

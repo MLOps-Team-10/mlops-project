@@ -1,0 +1,45 @@
+name: Codecheck
+
+on:
+  pull_request:
+    branches: ["main"]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: codecheck-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  codecheck:
+    name: Pre-commit + Ruff + Mypy (gate)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --dev --locked
+
+      # Hygiene checks: whitespace, EOF, yaml/toml sanity, merge markers, secrets, etc.
+      # Even if devs run pre-commit locally, this guarantees consistency in CI.
+      - name: Pre-commit (hygiene)
+        run: uv run pre-commit run --all-files
+
+      # Type checking: keep it "soft" while the codebase is evolving.
+      # Turn off continue-on-error later if you want it to be a hard gate.
+      - name: Mypy (soft)
+        run: uv run mypy src
+        continue-on-error: true
+
+      # Linting: ruff format and lint checks
+      - name: Ruff format (check)
+        run: uv run ruff format . --check --diff
+
+      - name: Ruff lint (check)
+        run: uv run ruff check . --fix

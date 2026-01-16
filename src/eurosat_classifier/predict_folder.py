@@ -125,7 +125,8 @@ def predict_image(
         probs = torch.softmax(logits, dim=1)[0]
 
     top_prob, top_idx = torch.max(probs, dim=0)
-    pred_class = EUROSAT_CLASSES[top_idx.item()]
+    top_idx_int = int(top_idx.item())
+    pred_class = EUROSAT_CLASSES[top_idx_int]
     confidence = top_prob.item()
 
     return pred_class, confidence
@@ -147,9 +148,7 @@ def predict_folder(folder_path: str = "data/test"):
     model = load_model(Path("models/eurosat_best.pth"), device)
 
     folder = Path(folder_path)
-    image_paths = sorted(
-        p for p in folder.iterdir() if p.suffix.lower() in {".jpg", ".jpeg", ".png"}
-    )
+    image_paths = sorted(p for p in folder.iterdir() if p.suffix.lower() in {".jpg", ".jpeg", ".png"})
 
     if not image_paths:
         logger.error(f"No images found in {folder}")
