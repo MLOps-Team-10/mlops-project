@@ -282,6 +282,11 @@ def main(cfg: DictConfig) -> None:
     """
     repo_root = Path(get_original_cwd())
     load_dotenv(repo_root / ".env")
+    if os.getenv("WANDB_API_KEY"):
+        logger.info(" W&B API Key found in environment")
+    else:
+        logger.warning("W&B API Key NOT found!")
+
     logs_dir = repo_root / "logs"
     models_dir = repo_root / "models"
 
@@ -291,10 +296,10 @@ def main(cfg: DictConfig) -> None:
     # Configure logging before emitting any log lines
     setup_logging(logs_dir)
     wandb.init(
-        project=os.getenv("WANDB_PROJECT", "test_run"),
-        entity=os.getenv("WANDB_ENTITY", "mirmushfiqulhaque"),
-        #entity=os.getenv("WANDB_ENTITY"),
-        config=OmegaConf.to_container(cfg, resolve=True)
+        
+    project=os.getenv("WANDB_PROJECT"),
+    entity=os.getenv("WANDB_ENTITY"), 
+    config=OmegaConf.to_container(cfg, resolve=True)
     )
 
     logger.info("Hydra config:\n" + OmegaConf.to_yaml(cfg))
