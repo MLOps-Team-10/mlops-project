@@ -11,97 +11,73 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint and formatting (pre-commit)
+  precommit:
+    name: Pre-commit (hygiene)
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v7
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
           enable-cache: true
+      - run: uv sync --dev --locked
+      - run: uv run pre-commit run --all-files
 
-      - name: Install dependencies
-        run: uv sync --dev --locked
-
-      - name: Run pre-commit
-        run: uv run pre-commit run --all-files
-
-  typecheck:
-    name: Type checking (mypy)
+  lint_typecheck:
+    name: Ruff + Mypy
     runs-on: ubuntu-latest
-    needs: lint
-
+    needs: precommit
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v7
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
           enable-cache: true
-
-      - name: Install dependencies
-        run: uv sync --dev --locked
-
-      - name: Run mypy
+      - run: uv sync --dev --locked
+      - name: Ruff format (check)
+        run: uv run ruff format . --check --diff
+      - name: Ruff lint
+        run: uv run ruff check .
+      - name: Mypy
         run: uv run mypy src
-        continue-on-error: true
+        continue-on-error: true   # se vuoi che non blocchi tutto
 
   tests:
-    name: Unit tests (pytest)
-    runs-on: ubuntu-latest
-    needs: lint
-
+    name: Unit tests (matrix)
+    runs-on: ${{ matrix.os }}
+    needs: precommit
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.11", "3.12"]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v7
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
           enable-cache: true
-
-      - name: Install dependencies
-        run: uv sync --dev --locked
-
-      - name: Run pytest
-        run: uv run pytest -q
+      - run: uv sync --dev --locked
+      - run: uv run pytest -q
 
   coverage:
-    name: Coverage report
+    name: Coverage (ubuntu/3.12)
     runs-on: ubuntu-latest
     needs: tests
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v7
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
           enable-cache: true
-
-      - name: Install dependencies
-        run: uv sync --dev --locked
-
+      - run: uv sync --dev --locked
       - name: Run tests with coverage
         run: |
           uv run coverage erase
           uv run coverage run --source=src -m pytest -q
           uv run coverage report -m | tee coverage.txt
           uv run coverage xml -o coverage.xml
-          ls -la
-          test -f .coverage
-
-      - name: Save coverage artifacts
+      - name: Upload coverage artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
