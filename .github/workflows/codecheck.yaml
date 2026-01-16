@@ -37,3 +37,10 @@ jobs:
       - name: Mypy (soft)
         run: uv run mypy src
         continue-on-error: true
+
+      # Linting: ruff format and lint checks
+      - name: Ruff format (check)
+        run: uv run ruff format . --check --diff
+
+      - name: Ruff lint (check)
+        run: uv run ruff check . --fix
