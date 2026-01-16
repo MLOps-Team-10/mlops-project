@@ -40,7 +40,6 @@ class EuroSATDataModule(pl.LightningDataModule):
 
         # These will be populated in setup().
 
-
         # Training-time transforms.
         # Includes data augmentation to improve generalization.
         self.train_transform = transforms.Compose(
