@@ -38,6 +38,3 @@ ENTRYPOINT ["uv", "run", "python", "-m", "eurosat_classifier.evaluate"]
 # evaluate:latest specify the image to use
 # --ckpt /models/eurosat_best.pth pass the model checkpoint argument to the evaluation script
 # --data-dir /data/raw/rgb pass the data directory argument to the evaluation
-
-
-

@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Tuple
+from typing import cast
 
-import torch
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
+from torchvision.datasets import VisionDataset
 
 
 @dataclass
@@ -15,6 +16,7 @@ class DataConfig:
     This keeps all data related hyperparameters in one place and makes it
     easy to pass them around or serialize them in configs.
     """
+
     data_dir: str = "data/raw/eurosat/EuroSAT"
     batch_size: int = 64
     valid_fraction: float = 0.2
@@ -71,7 +73,10 @@ def get_dataloaders(config: DataConfig) -> Tuple[DataLoader, DataLoader]:
     train_dataset, valid_dataset = random_split(full_dataset, [train_size, valid_size])
 
     # Use the validation transform on the validation subset
-    valid_dataset.dataset.transform = valid_transform
+
+    # Tell mypy that the underlying dataset supports `.transform`
+    base_valid = cast(VisionDataset, valid_dataset.dataset)
+    base_valid.transform = valid_transform
 
     # Build the training dataloader
     trainloader = DataLoader(

@@ -147,9 +147,7 @@ def predict_folder(folder_path: str = "data/test"):
     model = load_model(Path("models/eurosat_best.pth"), device)
 
     folder = Path(folder_path)
-    image_paths = sorted(
-        p for p in folder.iterdir() if p.suffix.lower() in {".jpg", ".jpeg", ".png"}
-    )
+    image_paths = sorted(p for p in folder.iterdir() if p.suffix.lower() in {".jpg", ".jpeg", ".png"})
 
     if not image_paths:
         logger.error(f"No images found in {folder}")

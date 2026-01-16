@@ -1,0 +1,152 @@
+name: CI
+
+# -------------------------------------------------------------------
+# Trigger policy:
+# - Run CI only on Pull Requests targeting `main`
+# - Avoid duplicate runs on push + PR
+# - `synchronize` covers additional commits pushed to the PR branch
+# -------------------------------------------------------------------
+on:
+  pull_request:
+    branches: ["main"]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# -------------------------------------------------------------------
+# Concurrency policy:
+# - Ensure only one CI run per PR is active at a time
+# - Cancel previous runs when new commits are pushed
+# - Saves CI time and resources
+# -------------------------------------------------------------------
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ================================================================
+  # 1) PRE-COMMIT: Repository hygiene and fast feedback
+  # ================================================================
+  precommit:
+    name: Pre-commit (hygiene)
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository source code
+      - uses: actions/checkout@v5
+
+      # Install Python using uv (fast, cached, reproducible)
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      # Install all locked dependencies (including dev tools)
+      - run: uv sync --dev --locked
+
+      # Run all pre-commit hooks on the entire repository
+      # This enforces formatting, file hygiene, and basic consistency checks
+      - run: uv run pre-commit run --all-files
+
+  # ================================================================
+  # 2) LINTING + TYPE CHECKING
+  # ================================================================
+  lint_typecheck:
+    name: Ruff + Mypy
+    runs-on: ubuntu-latest
+    needs: precommit   # Only run if hygiene checks pass
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - run: uv sync --dev --locked
+
+      # Check code formatting without modifying files
+      # `--diff` shows what would change, improving debuggability
+      - name: Ruff format (check)
+        run: uv run ruff format . --check --diff
+
+      # Run Ruff static analysis (linting rules)
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      # Run static type checking
+      # `continue-on-error` allows CI to proceed even if typing is incomplete
+      # This is useful during incremental adoption of typing
+      - name: Mypy
+        run: uv run mypy src
+        continue-on-error: true
+
+  # ================================================================
+  # 3) UNIT TESTS (Cross-platform matrix)
+  # ================================================================
+  tests:
+    name: Unit tests (matrix)
+    runs-on: ${{ matrix.os }}
+    needs: precommit
+
+    strategy:
+      # Run all matrix jobs even if one fails
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - run: uv sync --dev --locked
+
+      # Run unit tests quietly (failures still reported)
+      - run: uv run pytest -q
+
+  # ================================================================
+  # 4) COVERAGE REPORT (Single canonical environment)
+  # ================================================================
+  coverage:
+    name: Coverage (ubuntu/3.12)
+    runs-on: ubuntu-latest
+    needs: tests
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - run: uv sync --dev --locked
+
+      # Run tests with coverage enabled
+      # Generate:
+      # - terminal report
+      # - XML report (CI / tooling friendly)
+      # - raw .coverage file
+      - name: Run tests with coverage
+        run: |
+          uv run coverage erase
+          uv run coverage run --source=src -m pytest -q
+          uv run coverage report -m | tee coverage.txt
+          uv run coverage xml -o coverage.xml
+
+      # Upload coverage artifacts for inspection and grading
+      # `if: always()` ensures artifacts are available even if tests fail
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: |
+            .coverage
+            coverage.txt
+            coverage.xml
+          if-no-files-found: warn

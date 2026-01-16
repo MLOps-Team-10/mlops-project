@@ -29,6 +29,7 @@ dependencies = [
     "hydra-core",
     "pytorch-lightning",
     "dvc>=3.66.1",
+    "mypy>=1.19.1",
 ]
 
 [dependency-groups]
@@ -63,4 +64,40 @@ explicit = true
 line-length = 120
 
 [tool.coverage.run]
-omit = ["tests/*"]
+source = ["src"]
+relative_files = true
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+packages = ["eurosat_classifier"]
+show_error_codes = true
+pretty = true
+no_implicit_optional = true
+warn_unused_ignores = true
+warn_unreachable = true
+exclude = [
+  "data/",
+  "models/",
+  "outputs/",
+  "logs/",
+  "lightning_logs/",
+  "docs/",
+  ".venv/",
+  "__pycache__/",
+]
+
+[[tool.mypy.overrides]]
+module = [
+  "torch.*",
+  "torchvision.*",
+  "kagglehub.*",
+  "timm.*",
+  "pytorch_lightning.*",
+  "hydra.*",
+]
+ignore_missing_imports = true

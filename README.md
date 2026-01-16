@@ -23,7 +23,7 @@ return the checklist with completed items marked with an "x" and incomplete item
 indicates what module the bullet point is related to.
 
 ### Week 1
- - [x]  [CORE M5](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/git/) Create a git repository (M5) 
+ - [x]  [CORE M5](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/git/) Create a git repository (M5)
 
 - [x]  [CORE M5](https://skaftenicki.github.io/dtu_mlops/s2_organisation_and_version_control/git/) Make sure that all team members have write access to the GitHub repository (M5)
 
@@ -102,7 +102,7 @@ indicates what module the bullet point is related to.
 
 * [ ] [OPT M26](https://skaftenicki.github.io/dtu_mlops/s7_deployment/frontend/) Create a frontend for your API (M26)
 
-  
+
 
 ### Week 3
 
@@ -185,5 +185,3 @@ The directory structure of the project looks like this:
 Created using [mlops_template](https://github.com/SkafteNicki/mlops_template),
 a [cookiecutter template](https://github.com/cookiecutter/cookiecutter) for getting
 started with Machine Learning Operations (MLOps).
-
-

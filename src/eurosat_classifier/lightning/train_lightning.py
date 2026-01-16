@@ -81,7 +81,7 @@ def main(cfg: DictConfig) -> None:
 
     # PyTorch Lightning Trainer:
     # - Orchestrates the full training loop
-    #shows explicit configuration of training duration and logging frequency.
+    # shows explicit configuration of training duration and logging frequency.
     trainer = pl.Trainer(
         max_epochs=cfg.training.epochs,
         callbacks=[ckpt, es],
