@@ -1,22 +1,21 @@
-name: Code linting
+name: Linting (branch pushes)
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - "**"
+      - "!main"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: linting-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Ruff + Mypy
+  linting:
+    name: Quick lint/format checks
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v5
 
       - name: Setup uv
@@ -28,11 +27,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev --locked
 
+      # Keep this lightweight: fast checks only.
       - name: Ruff format (check)
         run: uv run ruff format . --check --diff
 
       - name: Ruff lint (check)
         run: uv run ruff check .
-
-      - name: Mypy (type check)
-        run: uv run mypy src

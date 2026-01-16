@@ -5,7 +5,7 @@ import torch
 from loguru import logger
 from torch import nn
 
-from eurosat_classifier.data import get_dataloaders
+from eurosat_classifier.data import get_dataloaders, DataConfig
 from eurosat_classifier.model import EuroSATModel, ModelConfig
 from eurosat_classifier.train import validate
 
@@ -82,10 +82,12 @@ def main() -> None:
 
     logger.info("Creating validation dataloader...")
     _, validloader = get_dataloaders(
-        data_dir=args.data_dir,
-        batch_size=args.batch_size,
-        valid_fraction=0.2,
-        num_workers=args.num_workers,
+        DataConfig(
+            data_dir=args.data_dir,
+            batch_size=args.batch_size,
+            valid_fraction=args.valid_fraction,
+            num_workers=args.num_workers,
+        )
     )
 
     model = load_model(args.ckpt, device)
