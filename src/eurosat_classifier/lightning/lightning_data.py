@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 
 import pytorch_lightning as pl
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, random_split, Subset
 from torchvision import datasets, transforms
 
 
@@ -39,8 +39,8 @@ class EuroSATDataModule(pl.LightningDataModule):
         self.num_workers = num_workers
 
         # These will be populated in setup().
-        self.train_dataset = None
-        self.valid_dataset = None
+        train_dataset: Optional[Subset] = None
+        valid_dataset: Optional[Subset] = None
 
         # Training-time transforms.
         # Includes data augmentation to improve generalization.
@@ -101,6 +101,7 @@ class EuroSATDataModule(pl.LightningDataModule):
             full_dataset,
             [train_size, valid_size],
         )
+        assert self.valid_dataset is not None
 
         # Important detail:
         # random_split does NOT clone the dataset.
@@ -108,6 +109,8 @@ class EuroSATDataModule(pl.LightningDataModule):
         self.valid_dataset.dataset.transform = self.valid_transform
 
     def train_dataloader(self) -> DataLoader:
+        assert self.train_dataset is not None
+
         """
         DataLoader used during training.
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, cast, Sized
 
 import time
 
@@ -13,7 +13,7 @@ from omegaconf import DictConfig, OmegaConf
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
-from eurosat_classifier.data import get_dataloaders
+from eurosat_classifier.data import get_dataloaders, DataConfig
 from eurosat_classifier.model import EuroSATModel, ModelConfig
 from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb
 
@@ -141,14 +141,16 @@ def train(
     logger.info("Loading dataset and creating dataloaders...")
 
     trainloader, validloader = get_dataloaders(
-        data_dir=data_dir,
-        batch_size=batch_size,
-        valid_fraction=valid_fraction,
-        num_workers=num_workers,
+        DataConfig(
+            data_dir=data_dir,
+            batch_size=batch_size,
+            valid_fraction=valid_fraction,
+            num_workers=num_workers,
+        )
     )
 
-    logger.info(f"Training samples: {len(trainloader.dataset)}")
-    logger.info(f"Validation samples: {len(validloader.dataset)}")
+    logger.info(f"Training samples: {len(cast(Sized, trainloader.dataset))}")
+    logger.info(f"Validation samples: {len(cast(Sized, validloader.dataset))}")
 
     # Model creation
     logger.info("Building model...")
