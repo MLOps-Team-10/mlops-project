@@ -30,6 +30,10 @@ dependencies = [
     "pytorch-lightning",
     "dvc>=3.66.1",
     "mypy>=1.19.1",
+    "loguru>=0.7.3",
+    "python-dotenv>=1.2.1",
+    "wandb>=0.24.0",
+    "weave>=0.52.24",
 ]
 
 [dependency-groups]
