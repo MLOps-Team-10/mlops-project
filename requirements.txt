@@ -97,7 +97,7 @@ shellingham==1.5.4
     #   typer
 starlette==0.41.3
     # via fastapi
-sympy==1.13.1
+sympy==1.14.0
     # via torch
 timm==1.0.14
     # via eurosat-classifier (pyproject.toml)
