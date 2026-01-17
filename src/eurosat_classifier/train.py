@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 from eurosat_classifier.data import get_dataloaders
 from eurosat_classifier.data import DataConfig
 from eurosat_classifier.model import EuroSATModel, ModelConfig
-from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb
+from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb_cloud
 
 
 def setup_logging(logs_dir: Path) -> None:
@@ -272,7 +272,7 @@ def main(cfg: DictConfig) -> None:
     logger.info(f"Resolved data_dir: {data_dir}")
 
     # Download/copy dataset only if missing (idempotent)
-    ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
+    ensure_eurosat_rgb_cloud(download_root=str(repo_root / "data" / "raw"))
     #guarantee config and bootstrap match
     expected = (repo_root / "data" / "raw" / "eurosat_rgb").resolve()
     if data_dir != expected:
