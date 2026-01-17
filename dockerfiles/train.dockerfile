@@ -17,8 +17,9 @@ COPY src/ src/
 COPY .dvc/ .dvc/
 COPY data_zip.dvc data_zip.dvc
 
-RUN uv sync --locked --no-cache --no-install-project
 
+RUN uv sync --locked --no-cache --no-install-project
+RUN uv run dvc config core.no_scm true
 # Uncomment the following lines to use UV cache for faster builds
 #FROM base AS cached
 
