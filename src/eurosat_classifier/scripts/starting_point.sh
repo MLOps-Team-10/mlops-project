@@ -14,4 +14,6 @@ docker run --rm \
   -e PYTHONUNBUFFERED=1 \
   -v "$PWD/.secrets/bucket_manager.json:/run/secrets/gcp-sa.json" \
   -e GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp-sa.json \
+  --env-file .env \
+ # -v "$(pwd)/data:/app/data" \
   "${IMAGE_NAME}"

@@ -1,38 +1,35 @@
-name: Code linting
+name: Linting (branch pushes)
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches:
+      - "**"
+      - "!main"
+
+concurrency:
+  group: linting-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  format:
-    name: Check code formatting
+  linting:
+    name: Quick lint/format checks
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v5
 
-      - name: Install uv
+      - name: Setup uv
         uses: astral-sh/setup-uv@v7
         with:
+          python-version: "3.12"
           enable-cache: true
 
       - name: Install dependencies
-        run: |
-          uv sync --locked --dev
-          uv tree
+        run: uv sync --dev --locked
 
-      - name: ruff linter
-        run: |
-          uv run ruff check .
+      # Keep this lightweight: fast checks only.
+      - name: Ruff format (check)
+        run: uv run ruff format . --check --diff
 
-      - name: ruff formatter
-        run: |
-          uv run ruff format . --check
-
-      - name: mypy type checking
-        run: |
-          uv run mypy .
+      - name: Ruff lint (check)
+        run: uv run ruff check .

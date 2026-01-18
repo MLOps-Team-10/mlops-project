@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 
 from pathlib import Path
 from typing import Tuple
@@ -13,10 +14,12 @@ from omegaconf import DictConfig, OmegaConf
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
-from eurosat_classifier.data import get_dataloaders
-from eurosat_classifier.data import DataConfig
+
+from eurosat_classifier.data import get_dataloaders, DataConfig
 from eurosat_classifier.model import EuroSATModel, ModelConfig
-from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb_cloud
+from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb_cloud, ensure_eurosat_rgb
+import wandb
+from dotenv import load_dotenv
 
 
 def setup_logging(logs_dir: Path) -> None:
@@ -47,8 +50,7 @@ def setup_logging(logs_dir: Path) -> None:
         rotation="10 MB",
         retention="10 days",
         level="DEBUG",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | "
-        "{name}:{function}:{line} - {message}",
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {name}:{function}:{line} - {message}",
     )
 
 
@@ -136,20 +138,23 @@ def train(
     logger.info("INITIALIZING TRAINING")
     logger.info("=" * 80)
 
+    # Initialize wandb if not already done (for standalone train() calls, e.g., in tests)
+    if not wandb.run:
+        wandb.init(mode="disabled")
+
     device = select_device()
     logger.info(f"Device selected: {device}")
 
     # Data loading
     logger.info("Loading dataset and creating dataloaders...")
-
-    trainloader, validloader = get_dataloaders(
-        DataConfig(
+    data_config = DataConfig(
         data_dir=data_dir,
         batch_size=batch_size,
         valid_fraction=valid_fraction,
         num_workers=num_workers,
         )
-    )
+    
+    trainloader, validloader = get_dataloaders(config=data_config)
 
     logger.info(f"Training samples: {len(trainloader.dataset)}")
     logger.info(f"Validation samples: {len(validloader.dataset)}")
@@ -200,17 +205,18 @@ def train(
             loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
+            preds = logits.argmax(dim=1)
+            batch_acc = (preds == labels).float().mean().item()
+            wandb.log({"train/batch_loss": loss.item(), "train/batch_accuracy": batch_acc})
+
             running_loss += loss.item() * images.size(0)
             logger.info(f"Running loss: {running_loss}")
-            preds = logits.argmax(dim=1)
+
             running_correct += (preds == labels).sum().item()
             running_total += labels.size(0)
 
             if batch_idx % log_interval == 0:
-                logger.debug(
-                    f"[Epoch {epoch + 1}] Batch {batch_idx}/{len(trainloader)} | "
-                    f"Loss: {loss.item():.4f}"
-                )
+                logger.debug(f"[Epoch {epoch + 1}] Batch {batch_idx}/{len(trainloader)} | Loss: {loss.item():.4f}")
 
         train_loss = running_loss / running_total
         train_acc = running_correct / running_total
@@ -259,6 +265,12 @@ def main(cfg: DictConfig) -> None:
     - We anchor all important paths to repo_root (original cwd).
     """
     repo_root = Path(get_original_cwd())
+    load_dotenv(repo_root / ".env")
+    if os.getenv("WANDB_API_KEY"):
+        logger.info(" W&B API Key found in environment")
+    else:
+        logger.warning("W&B API Key NOT found!")
+
     logs_dir = repo_root / "logs"
     models_dir = repo_root / "models"
 
@@ -267,18 +279,24 @@ def main(cfg: DictConfig) -> None:
 
     # Configure logging before emitting any log lines
     setup_logging(logs_dir)
+    wandb.init(
+        project=os.getenv("WANDB_PROJECT"),
+        entity=os.getenv("WANDB_ENTITY"),
+        config=OmegaConf.to_container(cfg, resolve=True),
+    )
 
     logger.info("Hydra config:\n" + OmegaConf.to_yaml(cfg))
     logger.info(f"Resolved data_dir: {data_dir}")
 
     # Download/copy dataset only if missing (idempotent)
-    ensure_eurosat_rgb_cloud(download_root=str(repo_root / "data" / "raw"))
-    #guarantee config and bootstrap match
+    # From Cloud
+    #ensure_eurosat_rgb_cloud(download_root=str(repo_root / "data" / "raw"))
+    # From Website Download
+    ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
+    # guarantee config and bootstrap match
     expected = (repo_root / "data" / "raw" / "eurosat_rgb").resolve()
     if data_dir != expected:
-        raise ValueError(
-            f"Hydra data.data_dir={data_dir} does not match expected EuroSAT RGB dir {expected}"
-        )
+        raise ValueError(f"Hydra data.data_dir={data_dir} does not match expected EuroSAT RGB dir {expected}")
     train(
         data_dir=str(data_dir),  # absolute resolved path
         batch_size=cfg.data.batch_size,
@@ -293,6 +311,7 @@ def main(cfg: DictConfig) -> None:
         logs_dir=logs_dir,
         models_dir=models_dir,
     )
+    wandb.finish()
 
 
 if __name__ == "__main__":

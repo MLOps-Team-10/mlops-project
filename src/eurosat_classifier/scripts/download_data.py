@@ -71,9 +71,7 @@ def ensure_eurosat_rgb(
         # Some Kaggle bundles nest folders; fallback to a search
         candidates = [p for p in cache_path.rglob(rgb_folder_name) if p.is_dir()]
         if not candidates:
-            raise FileNotFoundError(
-                f"Could not find RGB folder '{rgb_folder_name}' inside kaggle cache: {cache_path}"
-            )
+            raise FileNotFoundError(f"Could not find RGB folder '{rgb_folder_name}' inside kaggle cache: {cache_path}")
         rgb_src = candidates[0]
 
     # Copy RGB data into target_dir (classes folders with JPGs)
