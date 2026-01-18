@@ -1,0 +1,4 @@
+# DVC - Ignore local overrides and heavy cache
+.dvc/config.local
+.dvc/tmp
+.dvc/cache
