@@ -1,9 +1,6 @@
-displayName: eurosat-train-cpu
-jobSpec:
-  serviceAccount: bucket-manager@mlops-exercises-484210.iam.gserviceaccount.com
-  workerPoolSpecs:
-    - machineSpec:
+workerPoolSpecs:
+    machineSpec:
         machineType: n1-highmem-2
-      replicaCount: 1
-      containerSpec:
+    replicaCount: 1
+    containerSpec:
         imageUri: europe-west1-docker.pkg.dev/mlops-exercises-484210/eurosat/train_no_cloud:latest
