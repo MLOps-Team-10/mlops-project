@@ -1,0 +1,25 @@
+substitutions:
+  _AR_REGION: europe-west1
+  _AR_REPO: eurosat
+  _IMAGE_NAME: train_no_cloud
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    env:
+      - DOCKER_BUILDKIT=1
+    args:
+      - build
+      - .
+      - -t
+      - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:latest
+      - -f
+      - dockerfiles/train.dockerfile
+
+  - name: gcr.io/cloud-builders/docker
+    id: 'Push container image'
+    args:
+      - push
+      - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:latest
+
+images:
+  - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:latest
