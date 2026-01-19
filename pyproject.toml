@@ -19,8 +19,6 @@ readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
     "fastapi==0.115.6",
-    "torch==2.5.0",
-    "torchvision==0.20.0",
     "timm==1.0.24",
     "typer==0.15.1",
     "uvicorn==0.34.0",
@@ -51,6 +49,11 @@ dev = [
     "matplotlib",
 ]
 
+[project.optional-dependencies]
+pytorch = [
+    "torch==2.5.0",
+    "torchvision==0.20.0",
+]
 
 [tool.uv.sources]
 torch = [
