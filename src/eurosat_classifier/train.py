@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader
 
 from eurosat_classifier.data import get_dataloaders, DataConfig
 from eurosat_classifier.model import EuroSATModel, ModelConfig
-from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb
+from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb_cloud
 import wandb
 from dotenv import load_dotenv
 
