@@ -152,8 +152,8 @@ def train(
         batch_size=batch_size,
         valid_fraction=valid_fraction,
         num_workers=num_workers,
-        )
-    
+    )
+
     trainloader, validloader = get_dataloaders(config=data_config)
 
     logger.info(f"Training samples: {len(trainloader.dataset)}")
@@ -273,7 +273,7 @@ def main(cfg: DictConfig) -> None:
         logger.warning("W&B API Key NOT found!")
 
     logs_dir = repo_root / "logs"
-    #models_dir = repo_root / "models"
+    # models_dir = repo_root / "models"
     # For Cloud Run
     models_dir_raw = os.getenv("AIP_MODEL_DIR") or "/gcs/dtu-mlops-eurosat/eurosat/models/"
     if models_dir_raw.startswith("gs://"):
@@ -299,7 +299,7 @@ def main(cfg: DictConfig) -> None:
     # From Cloud
     ensure_eurosat_rgb_cloud(download_root=str(repo_root / "data" / "raw"))
     # From Website Download
-    #ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
+    # ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
     # guarantee config and bootstrap match
     expected = (repo_root / "data" / "raw" / "eurosat_rgb").resolve()
     if data_dir != expected:

@@ -110,6 +110,7 @@ def validate(
 import torch.profiler
 from torch.profiler import ProfilerActivity
 
+
 def train(
     data_dir: str,
     batch_size: int,
@@ -157,14 +158,13 @@ def train(
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     logger.info("STARTING PROFILING...")
-    
+
     activities = [ProfilerActivity.CPU]
-    if device.type == 'cuda':
+    if device.type == "cuda":
         activities.append(ProfilerActivity.CUDA)
-    elif device.type == 'mps':
+    elif device.type == "mps":
         # Note: MPS profiling is experimental and might not provide full details
         pass
-
 
     with torch.profiler.profile(
         activities=activities,
@@ -189,7 +189,7 @@ def train(
                 loss = criterion(logits, labels)
                 loss.backward()
                 optimizer.step()
-                
+
                 # Signal the profiler that a step is complete
                 prof.step()
 
@@ -234,7 +234,6 @@ def main(cfg: DictConfig) -> None:
         models_dir=models_dir,
         profiler_logs_dir=profiler_logs_dir,
     )
-
 
 
 if __name__ == "__main__":
