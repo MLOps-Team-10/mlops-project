@@ -185,3 +185,6 @@ wandb/
 
 # Output folder
 outputs/**
+
+# Logs and profiler output
+logs/

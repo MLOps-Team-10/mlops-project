@@ -7,7 +7,7 @@ uv sync
 # build
 docker build -f dockerfiles/train.dockerfile -t "${IMAGE_NAME}" .
 
-# run 
+# run
 docker run --rm \
   --name train \
   --shm-size=2g \
