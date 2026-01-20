@@ -1,0 +1,7 @@
+.git
+.gitignore
+venv/
+__pycache__/
+*.csv
+data_zip/
+data/

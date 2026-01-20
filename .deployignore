@@ -1,0 +1,7 @@
+# First, ignore everything
+*
+
+# Then, un-ignore (!) the specific files you need
+!config_gpu.yaml
+!cloudbuild.yaml
+# (Add !your-script.py here if you need other files)
