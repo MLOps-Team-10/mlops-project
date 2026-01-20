@@ -3,12 +3,17 @@ name: Train and Deploy
 on:
   push:
     branches: [ "main" ]
+  # TODO: REMOVE ME
+  pull_request:
+    branches: ["main"]
 
 jobs:
   run-pipeline:
     if: false # TODO remove me after this workflow has been updated
     name: Run Train and Deploy pipeline
     runs-on: ${{ matrix.os }}
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_KEY_HENRY }}
     strategy:
       fail-fast: false
       matrix:
@@ -21,10 +26,10 @@ jobs:
       # 2. Authenticate to Google Cloud
       # This step creates a temporary credentials file from your Secret
       # and sets GOOGLE_APPLICATION_CREDENTIALS env var automatically.
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+      # - id: 'auth'
+      #   uses: 'google-github-actions/auth@v2'
+      #   with:
+      #     credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
       # 3. Setup UV
       - name: Setup uv
@@ -43,7 +48,7 @@ jobs:
 
       # 5. Pull Data (DVC automatically sees the auth from Step 2)
       - name: Pull Data
-        run: uv dvc pull
+        run: uv dvc pull --no-run-cache
 
       # 6. Build & Push Docker Image (Optional)
       - name: Build Docker
