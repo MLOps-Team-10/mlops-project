@@ -14,6 +14,7 @@ from omegaconf import DictConfig, OmegaConf
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
+
 from eurosat_classifier.data import get_dataloaders, DataConfig
 from eurosat_classifier.model import EuroSATModel, ModelConfig
 from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb
@@ -152,14 +153,8 @@ def train(
         valid_fraction=valid_fraction,
         num_workers=num_workers,
     )
-    trainloader, validloader = get_dataloaders(config=data_config)
 
-    # trainloader, validloader = get_dataloaders(
-    # data_dir=data_dir,
-    # batch_size=batch_size,
-    # valid_fraction=valid_fraction,
-    # num_workers=num_workers,
-    # )
+    trainloader, validloader = get_dataloaders(config=data_config)
 
     logger.info(f"Training samples: {len(trainloader.dataset)}")
     logger.info(f"Validation samples: {len(validloader.dataset)}")
@@ -294,6 +289,9 @@ def main(cfg: DictConfig) -> None:
     logger.info(f"Resolved data_dir: {data_dir}")
 
     # Download/copy dataset only if missing (idempotent)
+    # From Cloud
+    # ensure_eurosat_rgb_cloud(download_root=str(repo_root / "data" / "raw"))
+    # From Website Download
     ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
     # guarantee config and bootstrap match
     expected = (repo_root / "data" / "raw" / "eurosat_rgb").resolve()
