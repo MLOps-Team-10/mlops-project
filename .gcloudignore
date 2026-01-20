@@ -1,7 +1,45 @@
-.git
+.git/
 .gitignore
+
+# Virtual envs
+.venv/
 venv/
+
+# Python caches/build artifacts
 __pycache__/
-*.csv
-data_zip/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local env/secrets
+.env
+.env.*
+!*.example
+!*.template
+
+# Data & ML artifacts (usually large)
 data/
+data_zip/
+models/
+outputs/
+logs/
+lightning_logs/
+wandb/
+
+# DVC local cache
+.dvc/cache/
+.dvc/tmp/
+
+# OS/editor noise
+.DS_Store
+.vscode/
