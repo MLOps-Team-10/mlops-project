@@ -23,7 +23,7 @@ jobs:
       # 1. Check out code
       - uses: actions/checkout@v4
 
-      # 2. Authenticate to Google Cloud
+      # Authenticate to Google Cloud
       # This step creates a temporary credentials file from your Secret
       # and sets GOOGLE_APPLICATION_CREDENTIALS env var automatically.
       - id: auth
@@ -31,28 +31,32 @@ jobs:
         with:
           credentials_json: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
 
-      # 3. Setup UV
+      # Setup UV
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
 
-      # 4. Add DVC package
+      # Add DVC package
       - name: Install DVC
         run: uv add dvc dvc-gs
 
-      # 5. Install dependencies
+      # Install dependencies
       - name: Install dependencies
         run: uv sync --dev --locked
 
-      # 5. Pull Data (DVC automatically sees the auth from Step 2)
+      # Pull Data (DVC automatically sees the auth from Step 2)
       - name: Pull Data
         run: uv run dvc pull --no-run-cache
 
-      # 6. Build & Push Docker Image (Optional)
+      # Set up Cloud SDK
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      # Build & Push Docker Image
       - name: Build Docker
         run: |
           gcloud auth configure-docker
-          docker build -t gcr.io/mlops-team-10/mlops-project:latest .
-          docker push gcr.io/mlops-team-10/mlops-project:latest
+          docker build -t gcr.io/mlops-exercises-484210/eurosat-classifier:latest .
+          docker push gcr.io/mlops-exercises-484210/eurosat-classifier:latest
