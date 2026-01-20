@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import torch
 import pytest
 
+
 @pytest.fixture(autouse=True)
 def disable_torch_compile(monkeypatch):
     """
@@ -14,7 +15,7 @@ def disable_torch_compile(monkeypatch):
     """
     monkeypatch.setattr(torch, "compile", lambda model, *args, **kwargs: model)
 
-    
+
 class DummyLoader:
     def __init__(self, batches: int = 2, batch_size: int = 4) -> None:
         self._batches = batches
