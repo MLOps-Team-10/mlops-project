@@ -167,6 +167,7 @@ def train(
         pretrained=pretrained,
     )
     model = EuroSATModel(config).to(device)
+    model = torch.compile(model)
 
     num_params = sum(p.numel() for p in model.parameters())
     logger.info(f"Model: {model_name}")
@@ -272,8 +273,14 @@ def main(cfg: DictConfig) -> None:
         logger.warning("W&B API Key NOT found!")
 
     logs_dir = repo_root / "logs"
-    models_dir = repo_root / "models"
-
+    #models_dir = repo_root / "models"
+    # For Cloud Run
+    models_dir_raw = os.getenv("AIP_MODEL_DIR") or "/gcs/dtu-mlops-eurosat/eurosat/models/"
+    if models_dir_raw.startswith("gs://"):
+        raise ValueError(
+            f"AIP_MODEL_DIR looks like a GCS URI ({models_dir_raw}). Expected a local mount path (e.g. /gcs/...)."
+        )
+    models_dir = Path(models_dir_raw)
     # Resolve dataset directory relative to repo root for reproducibility
     data_dir = (repo_root / cfg.data.data_dir).resolve()
 
@@ -290,9 +297,9 @@ def main(cfg: DictConfig) -> None:
 
     # Download/copy dataset only if missing (idempotent)
     # From Cloud
-    #ensure_eurosat_rgb_cloud(download_root=str(repo_root / "data" / "raw"))
+    ensure_eurosat_rgb_cloud(download_root=str(repo_root / "data" / "raw"))
     # From Website Download
-    ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
+    #ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
     # guarantee config and bootstrap match
     expected = (repo_root / "data" / "raw" / "eurosat_rgb").resolve()
     if data_dir != expected:
