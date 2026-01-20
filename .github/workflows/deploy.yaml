@@ -48,11 +48,11 @@ jobs:
 
       # 5. Pull Data (DVC automatically sees the auth from Step 2)
       - name: Pull Data
-        run: uv dvc pull --no-run-cache
+        run: uv run dvc pull --no-run-cache
 
       # 6. Build & Push Docker Image (Optional)
       - name: Build Docker
         run: |
           gcloud auth configure-docker
-          docker build -t gcr.io/my-project/my-image:latest .
-          docker push gcr.io/my-project/my-image:latest
+          docker build -t gcr.io/mlops-team-10/mlops-project:latest .
+          docker push gcr.io/mlops-team-10/mlops-project:latest
