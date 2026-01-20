@@ -11,6 +11,7 @@ import zipfile
 
 import kagglehub
 
+
 def _iter_files(root: Path, exts: tuple[str, ...] = (".jpg", ".jpeg")) -> Iterable[Path]:
     for p in root.rglob("*"):
         if p.is_file() and p.suffix.lower() in exts:
@@ -157,9 +158,7 @@ def ensure_eurosat_rgb_cloud(
 
         extracted_root = tmp_dir / target_name
         if not extracted_root.is_dir():
-            raise FileNotFoundError(
-                f"Zip did not contain expected folder '{target_name}'. Extracted to: {tmp_dir}"
-            )
+            raise FileNotFoundError(f"Zip did not contain expected folder '{target_name}'. Extracted to: {tmp_dir}")
 
         if target_dir.exists():
             shutil.rmtree(target_dir)

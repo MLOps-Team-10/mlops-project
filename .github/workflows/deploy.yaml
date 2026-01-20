@@ -6,8 +6,13 @@ on:
 
 jobs:
   run-pipeline:
-    runs-on: ubuntu-latest
-
+    name: Run Train and Deploy pipeline
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.11", "3.12"]
     steps:
       # 1. Check out code
       - uses: actions/checkout@v4
@@ -20,17 +25,26 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      # 3. Setup Python & DVC
+      # 3. Setup UV
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      # 4. Add DVC package
+      - name: Install DVC
+        run: uv add dvc dvc-gs
+
+      # 5. Install dependencies
       - name: Install dependencies
-        run: |
-          pip install dvc dvc-gs
-          pip install -r requirements.txt
+        run: uv sync --dev --locked
 
-      # 4. Pull Data (DVC automatically sees the auth from Step 2)
+      # 5. Pull Data (DVC automatically sees the auth from Step 2)
       - name: Pull Data
-        run: dvc pull
+        run: uv dvc pull
 
-      # 5. Build & Push Docker Image (Optional)
+      # 6. Build & Push Docker Image (Optional)
       - name: Build Docker
         run: |
           gcloud auth configure-docker
