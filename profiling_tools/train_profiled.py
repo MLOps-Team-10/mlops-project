@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Tuple, cast, Sized
+from typing import Tuple
 
-import time
 
 import hydra
 import torch
@@ -16,6 +15,9 @@ from torch.utils.data import DataLoader
 from eurosat_classifier.data import get_dataloaders, DataConfig
 from eurosat_classifier.model import EuroSATModel, ModelConfig
 from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb
+
+import torch.profiler
+from torch.profiler import ProfilerActivity
 
 
 def setup_logging(logs_dir: Path) -> None:
@@ -107,9 +109,6 @@ def validate(
     return valid_loss / total, correct / total
 
 
-import torch.profiler
-from torch.profiler import ProfilerActivity
-
 def train(
     data_dir: str,
     batch_size: int,
@@ -157,14 +156,13 @@ def train(
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     logger.info("STARTING PROFILING...")
-    
+
     activities = [ProfilerActivity.CPU]
-    if device.type == 'cuda':
+    if device.type == "cuda":
         activities.append(ProfilerActivity.CUDA)
-    elif device.type == 'mps':
+    elif device.type == "mps":
         # Note: MPS profiling is experimental and might not provide full details
         pass
-
 
     with torch.profiler.profile(
         activities=activities,
@@ -189,7 +187,7 @@ def train(
                 loss = criterion(logits, labels)
                 loss.backward()
                 optimizer.step()
-                
+
                 # Signal the profiler that a step is complete
                 prof.step()
 
@@ -234,7 +232,6 @@ def main(cfg: DictConfig) -> None:
         models_dir=models_dir,
         profiler_logs_dir=profiler_logs_dir,
     )
-
 
 
 if __name__ == "__main__":
