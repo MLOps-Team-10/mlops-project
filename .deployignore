@@ -2,6 +2,5 @@
 *
 
 # Then, un-ignore (!) the specific files you need
-!config_gpu.yaml
-!cloudbuild.yaml
+!/cloud_deploy
 # (Add !your-script.py here if you need other files)

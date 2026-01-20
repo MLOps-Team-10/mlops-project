@@ -11,8 +11,8 @@ steps:
       - |
         apk add --no-cache gettext
         # Modifying config_gpu.yaml directly
-        envsubst < config_gpu.yaml > config_gpu.yaml.tmp
-        mv config_gpu.yaml.tmp config_gpu.yaml
+        envsubst < cloud_deploy/config_gpu.yaml > cloud_deploy/config_gpu.yaml.tmp
+        mv cloud_deploy/config_gpu.yaml.tmp cloud_deploy/config_gpu.yaml
     secretEnv: ['WANDB_API_KEY']
 
   - name: 'alpine'
@@ -23,7 +23,7 @@ steps:
       - '-c'
       # FIX: cat config_gpu.yaml (the file you changed), not config.yaml
       - |
-        cat config_gpu.yaml
+        cat cloud_deploy/config_gpu.yaml
 
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'Train on vertex AI'
@@ -43,7 +43,7 @@ steps:
     ]
 
 substitutions:
-  _VERTEX_TRAIN_CONFIG: 'config_gpu.yaml'
+  _VERTEX_TRAIN_CONFIG: 'cloud_deploy/config_gpu.yaml'
 
 availableSecrets:
   secretManager:
