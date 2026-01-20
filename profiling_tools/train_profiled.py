@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Tuple, cast, Sized
+from typing import Tuple
 
-import time
 
 import hydra
 import torch
@@ -16,6 +15,9 @@ from torch.utils.data import DataLoader
 from eurosat_classifier.data import get_dataloaders, DataConfig
 from eurosat_classifier.model import EuroSATModel, ModelConfig
 from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb
+
+import torch.profiler
+from torch.profiler import ProfilerActivity
 
 
 def setup_logging(logs_dir: Path) -> None:
