@@ -108,6 +108,7 @@ def validate(
     # Dataset-average loss and accuracy
     return valid_loss / total, correct / total
 
+
 def train(
     data_dir: str,
     batch_size: int,
