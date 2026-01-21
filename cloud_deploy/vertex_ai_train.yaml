@@ -1,15 +1,14 @@
 substitutions:
   _VERTEX_TRAIN_CONFIG: cloud_deploy/config_gpu.yaml
-  _IMAGE_TAG: latest d # default fallback
 
-serviceAccount: projects/mlops-team-10/serviceAccounts/bucket-manager@mlops-team-10.iam.gserviceaccount.com
+serviceAccount: projects/mlops-exercises-484210/serviceAccounts/bucket-manager@mlops-exercises-484210.iam.gserviceaccount.com
 
 options:
   logging: CLOUD_LOGGING_ONLY
 
 availableSecrets:
   secretManager:
-    - versionName: projects/$PROJECT_ID/secrets/WANDB_API_KEY/versions/${_IMAGE_TAG}
+    - versionName: projects/$PROJECT_ID/secrets/WANDB_API_KEY/versions/latest
       env: WANDB_API_KEY
 
 steps:

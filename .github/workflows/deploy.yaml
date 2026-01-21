@@ -58,8 +58,8 @@ jobs:
 
       # Build & push training Docker image to Artifact Registry
       - name: Build and push training image (Cloud Build)
-        run: gcloud builds submit . --config=cloud_deploy/cloudbuild.yaml --substitutions=_IMAGE_TAG=${{ github.sha }}
+        run: gcloud builds submit . --config=cloud_deploy/cloudbuild.yaml
 
       # Submit Vertex AI training job using built image
       - name: Submit Vertex AI training job
-        run: gcloud builds submit . --config=cloud_deploy/vertex_ai_train.yaml --substitutions=_IMAGE_TAG=${{ github.sha }} --ignore-file=.deployignore
+        run: gcloud builds submit . --config=cloud_deploy/vertex_ai_train.yaml --ignore-file=.deployignore
