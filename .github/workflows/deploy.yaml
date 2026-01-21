@@ -3,50 +3,60 @@ name: Train and Deploy
 on:
   push:
     branches: [ "main" ]
+  # UNCOMMENT FOR TESTING
+  # pull_request:
+  #   branches: ["main"]
 
 jobs:
   run-pipeline:
+    if: false # TODO remove me after this workflow has been updated
     name: Run Train and Deploy pipeline
     runs-on: ${{ matrix.os }}
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_KEY_HENRY }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.11", "3.12"]
     steps:
-      # 1. Check out code
+      # Check out code
       - uses: actions/checkout@v4
 
-      # 2. Authenticate to Google Cloud
+      # Authenticate to Google Cloud
       # This step creates a temporary credentials file from your Secret
       # and sets GOOGLE_APPLICATION_CREDENTIALS env var automatically.
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v2'
+      - id: auth
+        uses: google-github-actions/auth@v3
         with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+          credentials_json: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
 
-      # 3. Setup UV
+      # Setup UV
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
 
-      # 4. Add DVC package
+      # Add DVC package
       - name: Install DVC
         run: uv add dvc dvc-gs
 
-      # 5. Install dependencies
+      # Install dependencies
       - name: Install dependencies
         run: uv sync --dev --locked
 
-      # 5. Pull Data (DVC automatically sees the auth from Step 2)
+      # Pull Data (DVC automatically sees the auth from Step 2)
       - name: Pull Data
-        run: uv dvc pull
+        run: uv run dvc pull --no-run-cache
 
-      # 6. Build & Push Docker Image (Optional)
+      # Set up Cloud SDK
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      # Build & Push Docker Image
       - name: Build Docker
         run: |
           gcloud auth configure-docker
-          docker build -t gcr.io/my-project/my-image:latest .
-          docker push gcr.io/my-project/my-image:latest
+          docker build -f dockerfiles/train-gpu.dockerfile -t gcr.io/mlops-exercises-484210/eurosat-classifier:latest .
+          docker push gcr.io/mlops-exercises-484210/eurosat-classifier:latest

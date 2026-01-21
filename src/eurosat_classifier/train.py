@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader
 
 from eurosat_classifier.data import get_dataloaders, DataConfig
 from eurosat_classifier.model import EuroSATModel, ModelConfig
-from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb
+from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb_cloud
 import wandb
 from dotenv import load_dotenv
 
@@ -68,6 +68,35 @@ def select_device() -> torch.device:
     if torch.cuda.is_available():
         return torch.device("cuda")
     return torch.device("cpu")
+
+
+def get_models_path(repo_root: Path) -> Path:
+    """
+    Determine the models path.
+
+    Priority:
+    1. AIP_MODEL_DIR env var (Cloud Run)
+    2. GCS path (cloud deployments)
+    3. Local models/ directory (GitHub Actions with DVC)
+
+    Returns the first available path.
+    """
+    models_dir_raw = os.getenv("AIP_MODEL_DIR")
+    gcs_path = Path("/gcs/dtu-mlops-eurosat/eurosat/models/")
+    if models_dir_raw:
+        if models_dir_raw.startswith("gs://"):
+            raise ValueError(
+                f"AIP_MODEL_DIR looks like a GCS URI ({models_dir_raw}). Expected a local mount path (e.g. /gcs/...)."
+            )
+        logger.info("Using AIP_MODEL_DIR from environment")
+        return Path(models_dir_raw)
+
+    if gcs_path.exists():
+        logger.info("Using GCS model directory")
+        return gcs_path
+
+    logger.info("Using local model directory")
+    return repo_root / "models"
 
 
 def validate(
@@ -167,6 +196,7 @@ def train(
         pretrained=pretrained,
     )
     model = EuroSATModel(config).to(device)
+    model = torch.compile(model)
 
     num_params = sum(p.numel() for p in model.parameters())
     logger.info(f"Model: {model_name}")
@@ -272,8 +302,7 @@ def main(cfg: DictConfig) -> None:
         logger.warning("W&B API Key NOT found!")
 
     logs_dir = repo_root / "logs"
-    models_dir = repo_root / "models"
-
+    models_dir = get_models_path(repo_root)
     # Resolve dataset directory relative to repo root for reproducibility
     data_dir = (repo_root / cfg.data.data_dir).resolve()
 
@@ -290,9 +319,9 @@ def main(cfg: DictConfig) -> None:
 
     # Download/copy dataset only if missing (idempotent)
     # From Cloud
-    # ensure_eurosat_rgb_cloud(download_root=str(repo_root / "data" / "raw"))
+    ensure_eurosat_rgb_cloud(download_root=str(repo_root / "data" / "raw"))
     # From Website Download
-    ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
+    # ensure_eurosat_rgb(download_root=str(repo_root / "data" / "raw"))
     # guarantee config and bootstrap match
     expected = (repo_root / "data" / "raw" / "eurosat_rgb").resolve()
     if data_dir != expected:

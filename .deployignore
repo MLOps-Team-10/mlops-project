@@ -1,0 +1,6 @@
+# First, ignore everything
+*
+
+# Then, un-ignore (!) the specific files you need
+!/cloud_deploy
+# (Add !your-script.py here if you need other files)
