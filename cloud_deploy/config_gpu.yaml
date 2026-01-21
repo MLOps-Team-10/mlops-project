@@ -5,11 +5,11 @@ workerPoolSpecs:
         acceleratorCount: 1
     replicaCount: 1
     containerSpec:
-        imageUri: europe-west1-docker.pkg.dev/mlops-exercises-484210/eurosat/gpu_cloud_storage_and_saving:${_IMAGE_TAG}
+        imageUri: europe-west1-docker.pkg.dev/mlops-exercises-484210/eurosat/gpu_cloud_storage_and_saving:latest
         env:
         - name: WANDB_API_KEY
           value: $WANDB_API_KEY
         - name: WANDB_PROJECT
           value: mlops-project
         - name: WANDB_ENTITY
-          value: ${_WANDB_ENTITY}
+          value: s252840-danmarks-tekniske-universitet-dtu
