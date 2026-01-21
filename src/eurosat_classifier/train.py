@@ -69,6 +69,7 @@ def select_device() -> torch.device:
         return torch.device("cuda")
     return torch.device("cpu")
 
+
 def get_models_path(repo_root: Path) -> Path:
     """
     Determine the models path.
@@ -84,7 +85,9 @@ def get_models_path(repo_root: Path) -> Path:
     gcs_path = Path("/gcs/dtu-mlops-eurosat/eurosat/models/")
     if models_dir_raw:
         if models_dir_raw.startswith("gs://"):
-            raise ValueError(f"AIP_MODEL_DIR looks like a GCS URI ({models_dir_raw}). Expected a local mount path (e.g. /gcs/...).")
+            raise ValueError(
+                f"AIP_MODEL_DIR looks like a GCS URI ({models_dir_raw}). Expected a local mount path (e.g. /gcs/...)."
+            )
         logger.info("Using AIP_MODEL_DIR from environment")
         return Path(models_dir_raw)
 
@@ -94,6 +97,7 @@ def get_models_path(repo_root: Path) -> Path:
 
     logger.info("Using local model directory")
     return repo_root / "models"
+
 
 def validate(
     model: nn.Module,
