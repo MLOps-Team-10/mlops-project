@@ -43,5 +43,5 @@ steps:
       - create
       - --region=europe-west1
       - --display-name=GPU-Training
-      - --service-account=bucket-manager@mlops-team-10.iam.gserviceaccount.com
+      - --service-account=bucket-manager@mlops-exercises-484210.iam.gserviceaccount.com
       - --config=${_VERTEX_TRAIN_CONFIG}
