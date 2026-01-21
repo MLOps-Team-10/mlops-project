@@ -5,10 +5,7 @@ RUN apt update && \
     apt install --no-install-recommends -y build-essential gcc && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
-
-
 WORKDIR /app
-
 
 COPY uv.lock uv.lock
 COPY pyproject.toml pyproject.toml
@@ -25,6 +22,5 @@ RUN uv run dvc config core.no_scm true
 
 ENV UV_LINK_MODE=copy
 RUN --mount=type=cache,target=/root/.cache/uv uv sync
-
 
 ENTRYPOINT ["uv", "run", "python", "src/eurosat_classifier/scripts/entrypoint_train.py"]

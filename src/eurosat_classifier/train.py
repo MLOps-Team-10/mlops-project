@@ -69,6 +69,31 @@ def select_device() -> torch.device:
         return torch.device("cuda")
     return torch.device("cpu")
 
+def get_models_path(repo_root: Path) -> Path:
+    """
+    Determine the models path.
+
+    Priority:
+    1. AIP_MODEL_DIR env var (Cloud Run)
+    2. GCS path (cloud deployments)
+    3. Local models/ directory (GitHub Actions with DVC)
+
+    Returns the first available path.
+    """
+    models_dir_raw = os.getenv("AIP_MODEL_DIR")
+    gcs_path = Path("/gcs/dtu-mlops-eurosat/eurosat/models/")
+    if models_dir_raw:
+        if models_dir_raw.startswith("gs://"):
+            raise ValueError(f"AIP_MODEL_DIR looks like a GCS URI ({models_dir_raw}). Expected a local mount path (e.g. /gcs/...).")
+        logger.info("Using AIP_MODEL_DIR from environment")
+        return Path(models_dir_raw)
+
+    if gcs_path.exists():
+        logger.info("Using GCS model directory")
+        return gcs_path
+
+    logger.info("Using local model directory")
+    return repo_root / "models"
 
 def validate(
     model: nn.Module,
@@ -273,14 +298,7 @@ def main(cfg: DictConfig) -> None:
         logger.warning("W&B API Key NOT found!")
 
     logs_dir = repo_root / "logs"
-    # models_dir = repo_root / "models"
-    # For Cloud Run
-    models_dir_raw = os.getenv("AIP_MODEL_DIR") or "/gcs/dtu-mlops-eurosat/eurosat/models/"
-    if models_dir_raw.startswith("gs://"):
-        raise ValueError(
-            f"AIP_MODEL_DIR looks like a GCS URI ({models_dir_raw}). Expected a local mount path (e.g. /gcs/...)."
-        )
-    models_dir = Path(models_dir_raw)
+    models_dir = get_models_path(repo_root)
     # Resolve dataset directory relative to repo root for reproducibility
     data_dir = (repo_root / cfg.data.data_dir).resolve()
 
