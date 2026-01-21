@@ -3,9 +3,9 @@ name: Train and Deploy
 on:
   push:
     branches: [ "main" ]
-  # TODO: REMOVE ME
-  pull_request:
-    branches: ["main"]
+  # UNCOMMENT FOR TESTING
+  # pull_request:
+  #   branches: ["main"]
 
 jobs:
   run-pipeline:
@@ -20,7 +20,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.11", "3.12"]
     steps:
-      # 1. Check out code
+      # Check out code
       - uses: actions/checkout@v4
 
       # Authenticate to Google Cloud
@@ -58,5 +58,5 @@ jobs:
       - name: Build Docker
         run: |
           gcloud auth configure-docker
-          docker build -t gcr.io/mlops-exercises-484210/eurosat-classifier:latest .
+          docker build -f dockerfiles/train-gpu.dockerfile -t gcr.io/mlops-exercises-484210/eurosat-classifier:latest .
           docker push gcr.io/mlops-exercises-484210/eurosat-classifier:latest
