@@ -1,6 +1,7 @@
 substitutions:
   _VERTEX_TRAIN_CONFIG: cloud_deploy/config_gpu.yaml
   _WANDB_ENTITY: s252840-danmarks-tekniske-universitet-dtu
+  _IMAGE_TAG: latest   # default fallback
 
 serviceAccount: projects/mlops-team-10/serviceAccounts/bucket-manager@mlops-team-10.iam.gserviceaccount.com
 

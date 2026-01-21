@@ -3,7 +3,7 @@ workerPoolSpecs:
         machineType: n1-highmem-2
     replicaCount: 1
     containerSpec:
-        imageUri: europe-west1-docker.pkg.dev/mlops-exercises-484210/gpu_cloud_storage_and_saving:latest
+        imageUri: europe-west1-docker.pkg.dev/mlops-exercises-484210/gpu_cloud_storage_and_saving:${_IMAGE_TAG}
         env:
         - name: WANDB_API_KEY
           value: $WANDB_API_KEY

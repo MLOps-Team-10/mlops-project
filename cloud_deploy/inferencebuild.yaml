@@ -2,6 +2,7 @@ substitutions:
   _AR_REGION: europe-west1
   _AR_REPO: eurosat
   _IMAGE_NAME: inference_gpu
+  _IMAGE_TAG: latest   # default fallback
 
 steps:
   - name: gcr.io/cloud-builders/docker
@@ -11,7 +12,7 @@ steps:
       - build
       - .
       - -t
-      - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:latest
+      - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:${_IMAGE_TAG}
       - -f
       - dockerfiles/inference_gpu.dockerfile
 
@@ -19,7 +20,7 @@ steps:
     id: 'Push container image'
     args:
       - push
-      - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:latest
+      - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:${_IMAGE_TAG}
 
 images:
-  - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:latest
+  - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:${_IMAGE_TAG}
