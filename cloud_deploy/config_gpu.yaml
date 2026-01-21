@@ -12,4 +12,4 @@ workerPoolSpecs:
         - name: WANDB_PROJECT
           value: mlops-project
         - name: WANDB_ENTITY
-          value: s252840-danmarks-tekniske-universitet-dtu
+          value: ${_WANDB_ENTITY}
