@@ -1,3 +1,4 @@
+from typing_extensions import Annotated
 import torch
 import io
 import os
@@ -18,7 +19,8 @@ def download_model():
     if not os.path.exists(DESTINATION_FILE_NAME):
         try:
             print(f"Downloading model {SOURCE_BLOB_NAME} from bucket {BUCKET_NAME}...")
-            client = storage.Client.from_service_account_json("service_account_key.json")
+            creds_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "mlops-exercises-484210-7592bc1e85e6.json")
+            client = storage.Client.from_service_account_json(creds_path)
             bucket = client.bucket(BUCKET_NAME)
             blob = bucket.blob(SOURCE_BLOB_NAME)
             blob.download_to_filename(DESTINATION_FILE_NAME)
@@ -66,7 +68,8 @@ async def health():
 
 @app.post("/predict")
 async def predict(
-    file: UploadFile = File(...),
+    # Using Annotated[UploadFile, File(...)] forces Swagger UI to show an upload button
+    file: Annotated[UploadFile, File(description="A satellite image (AnnualCrop, Forest, etc.)")],
     max_length: int = Query(default=10, description="hyperparameter")
 ):
     # 3. Read and Preprocess Image
