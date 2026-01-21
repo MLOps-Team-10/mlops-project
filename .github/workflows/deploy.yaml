@@ -6,6 +6,7 @@ on:
 
 jobs:
   run-pipeline:
+    if: false # TODO remove me after this workflow has been updated
     name: Run Train and Deploy pipeline
     runs-on: ${{ matrix.os }}
     strategy:
