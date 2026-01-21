@@ -3,13 +3,12 @@ name: Train and Deploy
 on:
   push:
     branches: [ "main" ]
-  # UNCOMMENT FOR TESTING
-  # pull_request:
-  #   branches: ["main"]
+  # TODO remove after testing this
+  pull_request:
+    branches: ["main"]
 
 jobs:
   run-pipeline:
-    if: false # TODO remove me after this workflow has been updated
     name: Run Train and Deploy pipeline
     runs-on: ${{ matrix.os }}
     env:
@@ -21,12 +20,14 @@ jobs:
         python-version: ["3.11", "3.12"]
     steps:
       # Check out code
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v5
 
       # Authenticate to Google Cloud
       # This step creates a temporary credentials file from your Secret
       # and sets GOOGLE_APPLICATION_CREDENTIALS env var automatically.
-      - id: auth
+      - name: Auth with GCP
+        id: auth
         uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
@@ -54,9 +55,17 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
 
-      # Build & Push Docker Image
-      - name: Build Docker
+      # Build & push training Docker image to Artifact Registry
+      - name: Build and push training image (Cloud Build)
         run: |
-          gcloud auth configure-docker
-          docker build -f dockerfiles/train-gpu.dockerfile -t gcr.io/mlops-exercises-484210/eurosat-classifier:latest .
-          docker push gcr.io/mlops-exercises-484210/eurosat-classifier:latest
+          gcloud builds submit . \
+            --config=cloud_deploy/cloudbuild.yaml \
+            --substitutions=_IMAGE_TAG=${{ github.sha }}
+
+      # Submit Vertex AI training job using built image
+      - name: Submit Vertex AI training job
+        run: |
+          gcloud builds submit . \
+            --config=cloud_deploy/vertex_ai_train.yaml \
+            --substitutions=_IMAGE_TAG=${{ github.sha }} \
+            --ignore-file=.deployignore
