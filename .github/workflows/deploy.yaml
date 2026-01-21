@@ -3,9 +3,6 @@ name: Train and Deploy
 on:
   push:
     branches: [ "main" ]
-  # TODO remove after testing this
-  pull_request:
-    branches: ["main"]
 
 jobs:
   run-pipeline:
