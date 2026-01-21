@@ -188,3 +188,7 @@ outputs/**
 
 # Logs and profiler output
 logs/
+
+.dvc/config.local
+.dvc/tmp
+.dvc/cache
