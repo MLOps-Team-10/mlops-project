@@ -1,13 +1,40 @@
 import torch
 import io
+import os
 from fastapi import FastAPI, UploadFile, File, Query
 from PIL import Image
 from torchvision import transforms
 from eurosat_classifier.model import EuroSATModel, ModelConfig
+from google.cloud import storage
 app = FastAPI()
 
+BUCKET_NAME = "dtu-mlops-eurosat" 
+SOURCE_BLOB_NAME = "eurosat/models/eurosat_best.pth"
+DESTINATION_FILE_NAME = "eurosat_best.pth"
+
+
+def download_model():
+    """Downloads the model from GCS to the local runtime."""
+    if not os.path.exists(DESTINATION_FILE_NAME):
+        try:
+            print(f"Downloading model {SOURCE_BLOB_NAME} from bucket {BUCKET_NAME}...")
+            client = storage.Client.from_service_account_json("service_account_key.json")
+            bucket = client.bucket(BUCKET_NAME)
+            blob = bucket.blob(SOURCE_BLOB_NAME)
+            blob.download_to_filename(DESTINATION_FILE_NAME)
+            print("Download complete.")
+        except Exception as e:
+            print(f"Error downloading model: {e}")
+            raise
+    else:
+        print("Model already exists locally, skipping download.")
+
+# Download the model before initializing PyTorch
+download_model()
+
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-checkpoint = torch.load("models/eurosat_models_eurosat_best.zip", map_location=device)
+checkpoint = torch.load(DESTINATION_FILE_NAME, map_location=device)
 
 config = ModelConfig(
     model_name=checkpoint["model_name"],
