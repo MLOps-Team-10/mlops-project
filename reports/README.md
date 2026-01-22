@@ -426,7 +426,7 @@ used as a more sensitive indicator of generalization and calibration changes tha
 Overall, W&B made experiments easier to compare across runs and helped us pick hyperparameters that improved validation
 performance rather than only optimizing for training behavior.
 
-[wandb](figures/W&B.png)
+![wandb](figures/W&B.png)
 
 
 ### Question 15
@@ -442,7 +442,19 @@ performance rather than only optimizing for training behavior.
 >
 > Answer:
 
---- question 15 fill here ---
+We used Docker to ensure a reproducible runtime for both local runs and cloud training. In particular, we built a GPU-enabled
+training image that bundles our source code, pinned Python dependencies, and the CUDA-compatible PyTorch stack. This removed
+“works on my machine” issues and made it straightforward to run the same training entrypoint locally, in CI, and on GCP.
+
+For cloud training we used the image as a **custom container** for Vertex AI. The container is built in Google Cloud Build
+and pushed to Artifact Registry, after which a Vertex AI CustomJob launches the container on a GPU machine and executes our
+training script with the desired Hydra/config overrides. Locally, the same image can be built and run with:
+
+`docker build -f train_gpu.dockerfile -t eurosat-train:latest .`
+
+`docker run --gpus all --rm eurosat-train:latest python -m src.train`
+
+Link to Dockerfile: [train_gpu.dockerfile](../train_gpu.dockerfile)
 
 ### Question 16
 
@@ -474,7 +486,19 @@ performance rather than only optimizing for training behavior.
 >
 > Answer:
 
---- question 17 fill here ---
+We used the following GCP services in our project:
+
+- **IAM & Service Accounts**: Managed authentication and authorization for both developers and GCP workloads. Service
+  accounts were used to grant least-privilege access (e.g., reading from buckets and pulling container images).
+- **Cloud Storage (Buckets)**: Stored our dataset and other large artifacts outside Git, enabling consistent access to the
+  same data across machines and CI/cloud runs.
+- **Artifact Registry**: Hosted our Docker images (including the GPU training image), making them easy to version and
+  reuse across services.
+- **Vertex AI**: Ran training as Custom Jobs using our custom Docker container on GPU machines.
+- **Cloud Run**: Deployed our containerized inference API as a managed service with autoscaling and HTTPS endpoints.
+
+We also explored **Compute Engine**, but did not use it in the final setup (we relied on Vertex AI + custom containers
+instead).
 
 ### Question 18
 
@@ -489,7 +513,18 @@ performance rather than only optimizing for training behavior.
 >
 > Answer:
 
---- question 18 fill here ---
+We explored **Compute Engine** early in the project to understand the VM workflow and to validate that our training setup
+could run on GCP-managed hardware. We tested two approaches: a “plain VM” workflow where we SSH’ed into the instance,
+**cloned the repository**, created the environment, and ran smoke tests to ensure the training entrypoint could start,
+access the dataset, and write outputs; and a containerized workflow where we pulled/built and ran our **Docker-based**
+training setup to verify dependency and runtime consistency.
+
+We briefly used low-cost **standard CPU VMs** for quick validation and then experimented with a **GPU VM** using an
+**NVIDIA T4** to confirm CUDA/PyTorch compatibility and that our code ran end-to-end on GPU hardware.
+
+Compute Engine was ultimately **not used in the final pipeline**. Once we moved to **Vertex AI Custom Jobs** with our
+custom GPU training container, it provided a more purpose-built managed training interface and cleaner integration with
+Cloud Build and Artifact Registry, so Compute Engine remained an exploration step rather than a core component.
 
 ### Question 19
 
@@ -498,7 +533,7 @@ performance rather than only optimizing for training behavior.
 >
 > Answer:
 
---- question 19 fill here ---
+![Bucket](figures/bucket_eurosat.png)
 
 ### Question 20
 
@@ -507,7 +542,7 @@ performance rather than only optimizing for training behavior.
 >
 > Answer:
 
---- question 20 fill here ---
+![list of docker images](figures/artfiacts_general_view.png)
 
 ### Question 21
 
@@ -516,7 +551,7 @@ performance rather than only optimizing for training behavior.
 >
 > Answer:
 
---- question 21 fill here ---
+![Cloud Build History](figures/cloud_build_history.png)
 
 ### Question 22
 
@@ -531,7 +566,17 @@ performance rather than only optimizing for training behavior.
 >
 > Answer:
 
---- question 22 fill here ---
+We trained our model in the cloud using **Vertex AI Custom Jobs** (rather than Compute Engine). Training was triggered via a
+Cloud Build workflow defined in [`cloud_deploy/vertex_ai_train.yaml`](../cloud_deploy/vertex_ai_train.yaml), which submits a
+Vertex job using `gcloud ai custom-jobs create` with a GPU job spec from `cloud_deploy/config_gpu.yaml`.
+
+The workflow uses a dedicated **service account** to follow least-privilege access and to allow the
+job to pull the training container image from **Artifact Registry** and read/write required artifacts (e.g., data/checkpoints).
+For experiment tracking, the **W&B API key** is stored in **Secret Manager** and injected at build/job time via
+`availableSecrets` as the `WANDB_API_KEY` environment variable, so credentials are never committed to the repository.
+
+Using Vertex AI + custom containers made training reproducible and operationally simpler than managing our own VMs, while
+still letting us run the exact same Docker image locally and in the cloud.
 
 ## Deployment
 
