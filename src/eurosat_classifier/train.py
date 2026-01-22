@@ -261,7 +261,7 @@ def train(
 
         logger.info(f"Validation loss: {valid_loss:.4f}")
         logger.info(f"Validation accuracy: {valid_acc:.4f}")
-
+        wandb.log({"valid/epoch_loss": valid_loss, "valid/epoch_accuracy": valid_acc, "train/epoch_loss": train_loss, "train/epoch_accuracy": train_acc})
         # Save best checkpoint (by validation accuracy)
         if valid_acc > best_valid_acc:
             best_valid_acc = valid_acc
