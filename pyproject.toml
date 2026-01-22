@@ -30,6 +30,9 @@ dependencies = [
     "pytorch-lightning",
     "dvc>=3.66.1",
     "mypy>=1.19.1",
+    "google-cloud-storage>=3.8.0",
+    "python-multipart>=0.0.21",
+    "locust>=2.43.1",
 ]
 
 [dependency-groups]

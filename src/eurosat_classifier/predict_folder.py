@@ -155,7 +155,7 @@ def predict_folder(folder_path: str = "data/test"):
     """
     device = select_device()
     transform = build_transform()
-    model = load_model(Path("models/eurosat.pth"), device)
+    model = load_model(Path("models/eurosat_best.pth"), device)
 
     folder = Path(folder_path)
     image_paths = sorted(p for p in folder.iterdir() if p.suffix.lower() in {".jpg", ".jpeg", ".png"})
@@ -175,4 +175,4 @@ def predict_folder(folder_path: str = "data/test"):
 # Allows this file to be imported without triggering inference,
 # while still supporting direct execution.
 if __name__ == "__main__":
-    predict_folder("data/test")
+    predict_folder("data/Earth")
