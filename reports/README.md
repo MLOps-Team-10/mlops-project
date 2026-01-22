@@ -407,7 +407,27 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 >
 > Answer:
 
---- question 14 fill here ---
+As shown in the screenshot below, we used Weights & Biases (W&B) to track both batch-level training metrics and epoch-level
+validation metrics for our EuroSAT experiments.
+
+During training, we logged **train loss** and **train accuracy** **per batch**. Logging these at a high frequency is
+useful for monitoring optimization dynamics in near real time: the training loss should generally decrease as the model
+learns, while training accuracy should increase. Batch-level curves also make it easy to spot instability early (e.g.,
+diverging loss, spikes due to an overly high learning rate, or noisy gradients from an aggressive batch size).
+
+After each epoch, we evaluated on a held-out validation split and logged **validation loss** and **validation accuracy**.
+These metrics are important because they provide a more reliable proxy for generalization than training metrics. In
+particular, comparing training vs. validation curves helps diagnose **overfitting**: if training loss keeps decreasing
+while validation loss plateaus or increases, the model is likely memorizing the training set. Conversely, if both training
+and validation metrics improve steadily, it indicates that the learned representations generalize.
+
+We primarily used validation accuracy as a model-selection signal (choose the best checkpoint), while validation loss was
+used as a more sensitive indicator of generalization and calibration changes that may not immediately show up in accuracy.
+Overall, W&B made experiments easier to compare across runs and helped us pick hyperparameters that improved validation
+performance rather than only optimizing for training behavior.
+
+[wandb](figures/W&B.png)
+
 
 ### Question 15
 
