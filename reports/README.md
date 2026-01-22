@@ -133,7 +133,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
-s253114
+s253114, s252840
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
@@ -333,9 +333,8 @@ us to iterate safely without destabilizing the shared codebase.
 >
 > Answer:
 
-Yes, we used DVC to manage datasets and model artifacts in our project.
-Instead of committing large data files directly to Git, we tracked them with DVC, while storing the actual data in a
-remote backend: this allowed us to version datasets in a Git-like way without bloating the repository.
+Yes, we used DVC to manage datasets in our project.
+Instead of committing large data files directly to Git, we tracked them with DVC, while storing the actual data in a remote Google Cloud Bucket : this allowed us to version datasets in a Git-like way without bloating the repository.
 DVC improved our project in several ways. First, it ensured reproducibility: every experiment and training run could be
 associated with a specific data version, making results traceable and comparable over time. Second, it enabled team
 collaboration, as all team members could pull the exact same dataset version using dvc pull, avoiding inconsistencies
