@@ -722,3 +722,19 @@ still letting us run the exact same Docker image locally and in the cloud.
 > *All members contributed to code by...*
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
+
+Student **s253114** was in charge of the core ML/codebase work, including the **data pipeline** (EuroSAT loading and
+preprocessing), **model and training implementation** (PyTorch/PyTorch Lightning), **experiment configuration** (Hydra),
+and **evaluation/inference code**. They also contributed to **testing and CI** (pytest, coverage, GitHub Actions) and
+general project structure/documentation.
+
+Student **s252840** was in charge of the Google Cloud part of the project, including **IAM permissions/service accounts**,
+**Cloud Storage buckets** (data storage for DVC), **Artifact Registry**, **Cloud Build** pipelines, and **Vertex AI**
+training using a custom GPU Docker image. This also included configuring **Secret Manager** access (e.g., injecting the
+W&B API key) and setting up the cloud-side training/deployment workflow.
+
+Both members contributed to coding, debugging, and reviewing changes via branches and pull requests, and collaborated on
+experiment design and reporting.
+
+**Generative AI usage:** We used **GitHub Copilot** for small code-completion tasks and to speed up writing boilerplate
+(e.g., tests and configuration snippets). All generated suggestions were reviewed and adapted before being committed.
