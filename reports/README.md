@@ -122,7 +122,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 1 fill here ---
+10
 
 ### Question 2
 > **Enter the study number for each member in the group**
@@ -133,7 +133,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 2 fill here ---
+s253114
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
@@ -147,7 +147,11 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 3 fill here ---
+We chose to use timm (PyTorch Image Models), which was not covered in the course.
+It provides a large collection of state-of-the-art computer vision models with consistent APIs and well-maintained pretrained weights, which significantly helped us complete the project more efficiently and robustly.
+Instead of implementing and maintaining convolutional architectures from scratch, we could directly leverage proven models such as ResNet, ensuring strong baseline performance on the EuroSAT dataset. This allowed us to focus more on data handling, training pipelines, evaluation, and MLOps aspects rather than low-level model definitions.
+Additionally, timm integrates seamlessly with PyTorch and supports easy switching between architectures, which was useful for experimentation and comparison.
+The availability of pretrained weights also improved convergence speed and final accuracy, especially given the limited size of the dataset.
 
 ## Coding environment
 
@@ -167,7 +171,21 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 4 fill here ---
+We managed dependencies using uv, a modern Python package and environment manager that provides fast, reproducible dependency resolution.
+All project dependencies are declared in a single pyproject.toml file, separated into runtime dependencies and development dependencies.
+From this configuration, uv generates a locked dependency file (uv.lock) that pins exact package versions and transitive dependencies,
+ensuring full reproducibility across machines and platforms.
+The development workflow is fully deterministic, so a new team member can obtain an exact copy of the environment by following a small number of steps.
+First, they clone the repository. Then, after installing uv, they simply run:
+
+'''bash
+uv sync --dev --locked
+'''
+
+This command creates a virtual environment and installs exactly the versions specified in the lockfile, guaranteeing that everyone works with the same dependency set.
+No manual version management is required.
+Additionally, we use uv run to execute tools such as pytest, ruff, mypy, and coverage inside the managed environment,
+avoiding reliance on global Python installations.
 
 ### Question 5
 
@@ -183,7 +201,18 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 5 fill here ---
+We initialized the project using the provided cookiecutter template, which already contained the full Python package
+structure under the src/ directory, including files such as train, evaluate, and prediction scripts. We did not alter
+this core structure, but instead filled in the existing Python modules with our own implementation, replacing the placeholder
+logic with fully functional code for data loading, training, evaluation, and inference.
+
+In addition to the template, we extended the project structure where required by the assignment and by MLOps best practices.
+We created the .github/workflows directory to define GitHub Actions pipelines for linting, type checking, testing, and
+coverage reporting, as this was not included in the original template. We also added a data/ directory to manage datasets,
+a docs/ folder for documentation, and a cloud_deploy/ folder to support deployment-related artifacts.
+
+Some directories were generated automatically by tools we adopted, such as lightning_logs for PyTorch Lightning training
+logs, outputs/ for Hydra experiment outputs, and reports/ for project deliverables and evaluation artifacts.
 
 ### Question 6
 
@@ -198,7 +227,18 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 6 fill here ---
+We enforced several rules for code quality, formatting, typing, and documentation throughout the project.
+For code style and linting, we used Ruff, which allowed us to apply consistent formatting and detect common programming  
+errors early. Ruff was run both locally and in the CI pipeline to ensure the same standards were enforced across the team.
+Formatting was handled automatically to avoid style discussions and reduce noise in code reviews.
+For typing, we used Mypy to perform static type checking. While not all third-party libraries provide full type hints,
+Mypy still helped us catch mismatched function signatures, invalid assumptions about data structures, and unintended None
+usage early in development. Type checking was included in CI to prevent regressions.
+Documentation was handled through docstrings and a dedicated docs/ folder, ensuring that training, evaluation, and data
+handling logic is understandable for new contributors.
+These concepts are crucial in larger projects because they scale human collaboration. Consistent formatting improves
+readability, typing reduces runtime errors and misunderstandings, and documentation lowers the onboarding cost for new
+team members while improving long-term maintainability.
 
 ## Version control
 
@@ -217,7 +257,11 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 7 fill here ---
+In total we implemented 3 tests. The first test validates the training workflow by mocking the model, dataloaders and
+validation step, and checks that the best checkpoint is saved (i.e., eurosat_best.pth is written when validation improves).
+The second test covers the model forward pass, ensuring EuroSATModel can be instantiated and produces logits with the
+expected shape for typical EuroSAT inputs. The third test verifies the data pipeline, checking that get_dataloaders returns
+non-empty DataLoaders and yields correctly shaped RGB batches, skipping gracefully if the dataset is not available.
 
 ### Question 8
 
@@ -232,7 +276,26 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 8 fill here ---
+Our total code coverage is 40% (214 missed statements out of 357), measured with coverage.py over the src/ package.
+Coverage is uneven: core utilities like data.py are fully covered (100%), while important entry-point scripts such as
+evaluate.py and predict_folder.py currently have 0% coverage, mainly because we did not add dedicated tests for their
+CLI-style logic and file-system interactions.
+Even with 100% coverage, we would not automatically trust the code to be error-free. Coverage only tells us that lines
+were executed, not that they were asserted meaningfully, tested under realistic conditions, or exercised across edge cases
+(e.g., corrupted images, missing classes, different devices, race conditions, performance regressions).
+High coverage can still miss bugs if tests are shallow, overly mocked, or don’t validate correct behavior. We treat
+coverage as a feedback metric to find untested areas, not as proof of correctness.
+
+| File                       | Statements | Missed  | Coverage | Missing Lines                      |
+|----------------------------|------------|---------|----------|------------------------------------|
+| `data.py`                  | 24         | 0       | 100%     | –                                  |
+| `evaluate.py`              | 49         | 49      | 0%       | 1–104                              |
+| `model.py`                 | 27         | 6       | 78%      | 81–95, 99                          |
+| `predict_folder.py`        | 53         | 53      | 0%       | 1–169                              |
+| `scripts/download_data.py` | 51         | 40      | 22%      | 13–15, 23–33, 53–103, 107          |
+| `test.py`                  | 30         | 30      | 0%       | 3–89                               |
+| `train.py`                 | 123        | 36      | 71%      | 28–44, 65–67, 86–108, 258–279, 296 |
+| **TOTAL**                  | **357**    | **214** | **40%**  |                                    |
 
 ### Question 9
 
@@ -247,7 +310,15 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 9 fill here ---
+Yes, our workflow relied on feature branches + pull requests. Each change was developed on a dedicated branch (e.g., feat/eurosat)
+instead of committing directly to main. When a feature was ready, we opened a PR targeting main, which acted as the main
+integration point and protected branch for stable code.
+PRs triggered our CI checks to catch issues early and consistently. In particular, we ran Codecheck on PRs to main
+(pre-commit hygiene, Ruff formatting/linting, and “soft” mypy), and a separate Tests workflow to run the unit test matrix
+across OSes and Python versions. This gave fast feedback before merging and helped prevent formatting regressions, obvious
+lint violations, and breaking tests from entering main.
+Branches and PRs improved version control by keeping main clean and deployable, making changes reviewable, and allowing
+us to iterate safely without destabilizing the shared codebase.
 
 ### Question 10
 
@@ -262,7 +333,14 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 10 fill here ---
+Yes, we used DVC to manage datasets and model artifacts in our project.
+Instead of committing large data files directly to Git, we tracked them with DVC, while storing the actual data in a
+remote backend: this allowed us to version datasets in a Git-like way without bloating the repository.
+DVC improved our project in several ways. First, it ensured reproducibility: every experiment and training run could be
+associated with a specific data version, making results traceable and comparable over time. Second, it enabled team
+collaboration, as all team members could pull the exact same dataset version using dvc pull, avoiding inconsistencies
+caused by local data copies. Third, it integrated cleanly with our CI/CD pipeline, where data could be fetched automatically
+before training or evaluation, ensuring that pipelines always ran on the correct inputs.
 
 ### Question 11
 
@@ -580,15 +658,3 @@ will check the repositories and the code to verify your answers.
 > *All members contributed to code by...*
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
-
-fewafewubaofewnafioewnifowf ewafw afew afewafewafionewoanf waf ewonfieownaf fewnaiof newio fweanøf wea fewa
- fweafewa fewiagonwa ognwra'g
- wa
- gwreapig ipweroang w rag
- wa grwa
-  g
-  ew
-  gwea g
-  ew ag ioreabnguorwa bg̈́aw
-   wa
-   gew4igioera giroeahgi0wra gwa
