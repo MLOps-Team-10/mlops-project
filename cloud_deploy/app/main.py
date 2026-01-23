@@ -10,6 +10,8 @@ import os
 import sys
 from loguru import logger
 
+from eurosat_classifier.model import EuroSATModel, ModelConfig
+
 logger.remove()
 logger.add(sys.stderr, level="INFO")
 
@@ -18,7 +20,6 @@ logger.info(f"PYTHONPATH = {os.environ.get('PYTHONPATH')}")
 logger.info(f"Files in /app: {os.listdir('/app')}")
 logger.info(f"Files in /app/app: {os.listdir('/app/app') if os.path.exists('/app/app') else 'missing'}")
 logger.info(f"PORT env = {os.environ.get('PORT', 'not set')}")
-from eurosat_classifier.model import EuroSATModel, ModelConfig
 
 MODEL_PATH = Path(os.getenv("MODEL_PATH", "/app/models/eurosat_best.pth"))
 

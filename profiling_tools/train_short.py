@@ -16,17 +16,17 @@ from omegaconf import DictConfig, OmegaConf
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
-# Add src to sys.path to ensure imports work if not installed
-# This is a fallback, though uv run usually handles it if installed
-src_path = Path(__file__).resolve().parent.parent / "src"
-if str(src_path) not in sys.path:
-    sys.path.insert(0, str(src_path))
-
 from eurosat_classifier.data import get_dataloaders, DataConfig
 from eurosat_classifier.model import EuroSATModel, ModelConfig
 from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb_cloud
 import wandb
 from dotenv import load_dotenv
+
+# Add src to sys.path to ensure imports work if not installed
+# This is a fallback, though uv run usually handles it if installed
+src_path = Path(__file__).resolve().parent.parent / "src"
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
 
 
 def setup_logging(logs_dir: Path) -> None:
@@ -155,7 +155,6 @@ def train(
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     models_dir.mkdir(parents=True, exist_ok=True)
 
-    best_valid_acc = 0.0
 
     # Force 1 epoch for profiling if not specified, but respect config
     # We will break early anyway
