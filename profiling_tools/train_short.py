@@ -155,7 +155,6 @@ def train(
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     models_dir.mkdir(parents=True, exist_ok=True)
 
-
     # Force 1 epoch for profiling if not specified, but respect config
     # We will break early anyway
 
