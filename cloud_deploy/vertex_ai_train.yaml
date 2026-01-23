@@ -1,8 +1,7 @@
 substitutions:
   _VERTEX_TRAIN_CONFIG: cloud_deploy/config_gpu.yaml
-  _WANDB_ENTITY: s252840-danmarks-tekniske-universitet-dtu
 
-serviceAccount: projects/mlops-team-10/serviceAccounts/bucket-manager@mlops-team-10.iam.gserviceaccount.com
+serviceAccount: projects/mlops-exercises-484210/serviceAccounts/bucket-manager@mlops-exercises-484210.iam.gserviceaccount.com
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -44,5 +43,5 @@ steps:
       - create
       - --region=europe-west1
       - --display-name=GPU-Training
-      - --service-account=bucket-manager@mlops-team-10.iam.gserviceaccount.com
+      - --service-account=bucket-manager@mlops-exercises-484210.iam.gserviceaccount.com
       - --config=${_VERTEX_TRAIN_CONFIG}

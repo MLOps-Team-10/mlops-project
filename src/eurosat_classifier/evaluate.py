@@ -72,6 +72,12 @@ def parse_args() -> argparse.Namespace:
         default=0,
         help="Number of DataLoader workers (0 recommended in Docker)",
     )
+    parser.add_argument(
+        "--valid-fraction",
+        type=int,
+        default=0.2,
+        help="Valid fraction",
+    )
 
     return parser.parse_args()
 
@@ -90,7 +96,22 @@ def main() -> None:
         )
     )
 
-    model = load_model(args.ckpt, device)
+    checkpoint = torch.load(args.ckpt, map_location=device)
+    state_dict = checkpoint["state_dict"]
+
+    # remove the prefix added by torch.compile / wrappers
+    new_state_dict = {k.replace("_orig_mod.", ""): v for k, v in state_dict.items()}
+
+    model = EuroSATModel(
+        ModelConfig(
+            model_name=checkpoint["model_name"],
+            num_classes=checkpoint["num_classes"],
+            pretrained=False,
+        )
+    ).to(device)
+
+    # now load
+    model.load_state_dict(new_state_dict)
     criterion = nn.CrossEntropyLoss()
 
     logger.info("Running evaluation...")
