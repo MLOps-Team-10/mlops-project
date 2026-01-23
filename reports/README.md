@@ -476,7 +476,7 @@ training script with the desired Hydra/config overrides. Locally, the same image
 
 `docker run --gpus all --rm eurosat-train:latest python -m src.train`
 
-Link to Dockerfile: [train_gpu.dockerfile](../train_gpu.dockerfile)
+Link to Dockerfile: [train_gpu.dockerfile](../dockerfiles/train_gpu.dockerfile)
 
 ### Question 16
 
@@ -748,7 +748,6 @@ carefully.
 >
 > Answer:
 
---- question 28 fill here ---
 Yes, we implemented additional practices focused on code quality and team collaboration.
 We enforced GitHub branch protection rules on the main branch, requiring pull requests, code reviews, and passing checks before merging.
 
