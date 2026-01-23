@@ -133,7 +133,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
-s253114, s252840
+s253114, s252840 , s253759
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
@@ -427,14 +427,14 @@ reusing previously resolved dependencies. An example workflow configuration can 
 As shown in the screenshot below, we used Weights & Biases (W&B) to track both batch-level training metrics and epoch-level
 validation metrics for our EuroSAT experiments.
 
-During training, we logged **train loss** and **train accuracy** **per batch**. Logging these at a high frequency is
+During training, we logged train loss and train accuracy per batch. Logging these at a high frequency is
 useful for monitoring optimization dynamics in near real time: the training loss should generally decrease as the model
 learns, while training accuracy should increase. Batch-level curves also make it easy to spot instability early (e.g.,
 diverging loss, spikes due to an overly high learning rate, or noisy gradients from an aggressive batch size).
 
-After each epoch, we evaluated on a held-out validation split and logged **validation loss** and **validation accuracy**.
+After each epoch, we evaluated on a held-out validation split and logged validation loss and validation accuracy.
 These metrics are important because they provide a more reliable proxy for generalization than training metrics. In
-particular, comparing training vs. validation curves helps diagnose **overfitting**: if training loss keeps decreasing
+particular, comparing training vs. validation curves helps diagnose overfitting: if training loss keeps decreasing
 while validation loss plateaus or increases, the model is likely memorizing the training set. Conversely, if both training
 and validation metrics improve steadily, it indicates that the learned representations generalize.
 
@@ -610,7 +610,14 @@ still letting us run the exact same Docker image locally and in the cloud.
 >
 > Answer:
 
---- question 23 fill here ---
+The EuroSAT image classification model has been successfully integrated into a RESTful API using the FastAPI framework.
+The implementation is designed for scalability and maintains a clear separation between the application logic and model assets.
+A specialized initialization routine was developed to programmatically retrieve model weights from Google Cloud Storage (GCS) during the application's startup phase.
+This approach ensures the container image remains lightweight and allows for seamless model updates without code redeployment.
+**Technical Highlights:**
+**State Dict Sanitization**: The code includes a robust mechanism to detect and remove _orig_mod. prefixes from the model's state dictionary. This ensures compatibility with models previously optimized via torch.compile, preventing runtime crashes during loading.
+**Input Validation**: By utilizing Annotated types and FastAPI's UploadFile, the service enforces strict validation of image inputs and hyperparameter queries (e.g., max_length), while automatically generating interactive documentation.
+**Performance Optimization**: The API supports asynchronous request handling and dynamic device detection (CUDA/CPU) to optimize inference throughput.
 
 ### Question 24
 
@@ -625,8 +632,17 @@ still letting us run the exact same Docker image locally and in the cloud.
 > *`curl -X POST -F "file=@file.json"<weburl>`*
 >
 > Answer:
-
---- question 24 fill here ---
+The API was containerized using Docker, encapsulating the Python environment, dependencies (managed via uv), and the FastAPI application into a single portable image.
+This container is deployed using Google Cloud Run, a serverless platform that automatically scales the service based on incoming traffic.
+The deployed service can be accessed via its public URL using two primary methods:
+Interactive Documentation (Swagger UI): Users can navigate to the /docs endpoint in their browser.
+Thanks to the Annotated parameters in the code, the UI provides a user-friendly "Try it out" button and a file upload prompt for testing predictions directly.
+CLI/REST Clients: The service is invoked via a POST request to the /predict endpoint.
+To invoke the service an user would call:
+curl -X 'POST' 'https://eurosat-api-abc123.a.run.app/predict' \
+     -H 'accept: application/json' \
+     -H 'Content-Type: multipart/form-data' \
+     -F 'file=@satellite_view.png'
 
 ### Question 25
 
@@ -785,7 +801,17 @@ Student **s252840** was in charge of the Google Cloud part of the project, inclu
 training using a custom GPU Docker image. This also included configuring **Secret Manager** access (e.g., injecting the
 W&B API key) and setting up the cloud-side training/deployment workflow.
 
-Both members contributed to coding, debugging, and reviewing changes via branches and pull requests, and collaborated on
+Student **s253759** was in charge of the core scalability and production-facing components of the project,
+ including Distributed Data Loading optimization, FastAPI model serving, and Weights & Biases (W&B) experiment tracking.
+This involved implementing a parallelized data pipeline and multi-processing workers to eliminate CPU bottlenecks, as well as developing a RESTful API for real-time inference.
+
+**Scalable Data Loading**: Implementing and profiling multi-core data loading to achieve a 3x speedup, ensuring the training process remained saturated even on CPU-limited hardware.
+
+**API Development & Containerization**: Building a robust FastAPI application capable of dynamically pulling model weights from Google Cloud Storage and handling image classification requests.
+
+**Experiment Tracking**: Integrating W&B logging to monitor training metrics, hardware utilization, and model performance across different experimental configurations.
+
+All members contributed to coding, debugging, and reviewing changes via branches and pull requests, and collaborated on
 experiment design and reporting.
 
 **Generative AI usage:** We used **GitHub Copilot** for small code-completion tasks and to speed up writing boilerplate
