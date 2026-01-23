@@ -757,8 +757,32 @@ endpoint.
 >
 > Answer:
 
---- question 30 fill here ---
+One of the main struggles of the project was managing the overall system complexity rather than implementing individual
+components. While each tool we used is powerful on its own, integrating them into a coherent and reproducible MLOps
+pipeline required significant effort.
 
+A large portion of the time was spent on continuous integration and workflow orchestration. Designing CI pipelines that
+were fast, non-duplicated, and meaningful was challenging, especially when combining pre-commit hooks, linting, type
+checking, unit testing, and multi-platform test matrices. We initially faced duplicated workflow executions and long
+feedback loops, and this was addressed by carefully separating responsibilities across multiple workflows (code hygiene,
+testing, and training/deployment) and by using GitHub Actions features such as concurrency groups, branch filters, and
+caching via uv.
+
+Another major challenge was data and artifact management. Ensuring that training data, model checkpoints, and
+configuration files stayed in sync across local development, CI, and cloud execution was non-trivial.
+We used DVC to version the dataset, which solved reproducibility issues
+but introduced additional complexity in authentication and CI integration. Similarly, managing trained models across
+Vertex AI and Cloud Run required careful coordination to avoid missing or incompatible artifacts.
+
+In addition, task management and dependency tracking within the team proved to be a significant difficulty.
+Many tasks were tightly coupled, for example CI changes depending on repository structure updates, or deployment steps
+depending on training and artifact availability. This made parallel work harder and increased coordination overhead.
+We mitigated this by breaking tasks into smaller incremental steps and clearly defining expectations between components,
+which helped keep progress manageable despite the interdependencies.
+
+We also spent considerable time on cloud deployment and debugging. Issues related to container architectures, missing
+model files at runtime, and Cloud Run startup failures required iterative debugging using local Docker runs and cloud logs.
+These problems highlighted the importance of validating containers locally and clearly defining runtime assumptions.
 ### Question 31
 
 > **State the individual contributions of each team member. This is required information from DTU, because we need to**
