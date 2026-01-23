@@ -11,7 +11,4 @@ COPY LICENSE LICENSE
 
 RUN uv sync --frozen
 
-COPY service_account_key.json service_account_key.json
-ENV GOOGLE_APPLICATION_CREDENTIALS="service_account_key.json"
-
 ENTRYPOINT ["uv", "run", "uvicorn", "src.eurosat_classifier.api:app", "--host", "0.0.0.0", "--port", "80"]
