@@ -133,7 +133,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
-s253114
+s253114, s252840
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
@@ -333,9 +333,8 @@ us to iterate safely without destabilizing the shared codebase.
 >
 > Answer:
 
-Yes, we used DVC to manage datasets and model artifacts in our project.
-Instead of committing large data files directly to Git, we tracked them with DVC, while storing the actual data in a
-remote backend: this allowed us to version datasets in a Git-like way without bloating the repository.
+Yes, we used DVC to manage datasets in our project.
+Instead of committing large data files directly to Git, we tracked them with DVC, while storing the actual data in a remote Google Cloud Bucket : this allowed us to version datasets in a Git-like way without bloating the repository.
 DVC improved our project in several ways. First, it ensured reproducibility: every experiment and training run could be
 associated with a specific data version, making results traceable and comparable over time. Second, it enabled team
 collaboration, as all team members could pull the exact same dataset version using dvc pull, avoiding inconsistencies
@@ -408,7 +407,27 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 >
 > Answer:
 
---- question 14 fill here ---
+As shown in the screenshot below, we used Weights & Biases (W&B) to track both batch-level training metrics and epoch-level
+validation metrics for our EuroSAT experiments.
+
+During training, we logged **train loss** and **train accuracy** **per batch**. Logging these at a high frequency is
+useful for monitoring optimization dynamics in near real time: the training loss should generally decrease as the model
+learns, while training accuracy should increase. Batch-level curves also make it easy to spot instability early (e.g.,
+diverging loss, spikes due to an overly high learning rate, or noisy gradients from an aggressive batch size).
+
+After each epoch, we evaluated on a held-out validation split and logged **validation loss** and **validation accuracy**.
+These metrics are important because they provide a more reliable proxy for generalization than training metrics. In
+particular, comparing training vs. validation curves helps diagnose **overfitting**: if training loss keeps decreasing
+while validation loss plateaus or increases, the model is likely memorizing the training set. Conversely, if both training
+and validation metrics improve steadily, it indicates that the learned representations generalize.
+
+We primarily used validation accuracy as a model-selection signal (choose the best checkpoint), while validation loss was
+used as a more sensitive indicator of generalization and calibration changes that may not immediately show up in accuracy.
+Overall, W&B made experiments easier to compare across runs and helped us pick hyperparameters that improved validation
+performance rather than only optimizing for training behavior.
+
+![wandb](figures/W&B.png)
+
 
 ### Question 15
 
@@ -423,7 +442,19 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 >
 > Answer:
 
---- question 15 fill here ---
+We used Docker to ensure a reproducible runtime for both local runs and cloud training. In particular, we built a GPU-enabled
+training image that bundles our source code, pinned Python dependencies, and the CUDA-compatible PyTorch stack. This removed
+“works on my machine” issues and made it straightforward to run the same training entrypoint locally, in CI, and on GCP.
+
+For cloud training we used the image as a **custom container** for Vertex AI. The container is built in Google Cloud Build
+and pushed to Artifact Registry, after which a Vertex AI CustomJob launches the container on a GPU machine and executes our
+training script with the desired Hydra/config overrides. Locally, the same image can be built and run with:
+
+`docker build -f train_gpu.dockerfile -t eurosat-train:latest .`
+
+`docker run --gpus all --rm eurosat-train:latest python -m src.train`
+
+Link to Dockerfile: [train_gpu.dockerfile](../train_gpu.dockerfile)
 
 ### Question 16
 
@@ -455,7 +486,19 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 >
 > Answer:
 
---- question 17 fill here ---
+We used the following GCP services in our project:
+
+- **IAM & Service Accounts**: Managed authentication and authorization for both developers and GCP workloads. Service
+  accounts were used to grant least-privilege access (e.g., reading from buckets and pulling container images).
+- **Cloud Storage (Buckets)**: Stored our dataset and other large artifacts outside Git, enabling consistent access to the
+  same data across machines and CI/cloud runs.
+- **Artifact Registry**: Hosted our Docker images (including the GPU training image), making them easy to version and
+  reuse across services.
+- **Vertex AI**: Ran training as Custom Jobs using our custom Docker container on GPU machines.
+- **Cloud Run**: Deployed our containerized inference API as a managed service with autoscaling and HTTPS endpoints.
+
+We also explored **Compute Engine**, but did not use it in the final setup (we relied on Vertex AI + custom containers
+instead).
 
 ### Question 18
 
@@ -470,7 +513,18 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 >
 > Answer:
 
---- question 18 fill here ---
+We explored **Compute Engine** early in the project to understand the VM workflow and to validate that our training setup
+could run on GCP-managed hardware. We tested two approaches: a “plain VM” workflow where we SSH’ed into the instance,
+**cloned the repository**, created the environment, and ran smoke tests to ensure the training entrypoint could start,
+access the dataset, and write outputs; and a containerized workflow where we pulled/built and ran our **Docker-based**
+training setup to verify dependency and runtime consistency.
+
+We briefly used low-cost **standard CPU VMs** for quick validation and then experimented with a **GPU VM** using an
+**NVIDIA T4** to confirm CUDA/PyTorch compatibility and that our code ran end-to-end on GPU hardware.
+
+Compute Engine was ultimately **not used in the final pipeline**. Once we moved to **Vertex AI Custom Jobs** with our
+custom GPU training container, it provided a more purpose-built managed training interface and cleaner integration with
+Cloud Build and Artifact Registry, so Compute Engine remained an exploration step rather than a core component.
 
 ### Question 19
 
@@ -479,7 +533,7 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 >
 > Answer:
 
---- question 19 fill here ---
+![Bucket](figures/bucket_eurosat.png)
 
 ### Question 20
 
@@ -488,7 +542,7 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 >
 > Answer:
 
---- question 20 fill here ---
+![list of docker images](figures/artfiacts_general_view.png)
 
 ### Question 21
 
@@ -497,7 +551,7 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 >
 > Answer:
 
---- question 21 fill here ---
+![Cloud Build History](figures/cloud_build_history.png)
 
 ### Question 22
 
@@ -512,7 +566,17 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 >
 > Answer:
 
---- question 22 fill here ---
+We trained our model in the cloud using **Vertex AI Custom Jobs** (rather than Compute Engine). Training was triggered via a
+Cloud Build workflow defined in [`cloud_deploy/vertex_ai_train.yaml`](../cloud_deploy/vertex_ai_train.yaml), which submits a
+Vertex job using `gcloud ai custom-jobs create` with a GPU job spec from `cloud_deploy/config_gpu.yaml`.
+
+The workflow uses a dedicated **service account** to follow least-privilege access and to allow the
+job to pull the training container image from **Artifact Registry** and read/write required artifacts (e.g., data/checkpoints).
+For experiment tracking, the **W&B API key** is stored in **Secret Manager** and injected at build/job time via
+`availableSecrets` as the `WANDB_API_KEY` environment variable, so credentials are never committed to the repository.
+
+Using Vertex AI + custom containers made training reproducible and operationally simpler than managing our own VMs, while
+still letting us run the exact same Docker image locally and in the cloud.
 
 ## Deployment
 
@@ -658,3 +722,19 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 > *All members contributed to code by...*
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
+
+Student **s253114** was in charge of the core ML/codebase work, including the **data pipeline** (EuroSAT loading and
+preprocessing), **model and training implementation** (PyTorch/PyTorch Lightning), **experiment configuration** (Hydra),
+and **evaluation/inference code**. They also contributed to **testing and CI** (pytest, coverage, GitHub Actions) and
+general project structure/documentation.
+
+Student **s252840** was in charge of the Google Cloud part of the project, including **IAM permissions/service accounts**,
+**Cloud Storage buckets** (data storage for DVC), **Artifact Registry**, **Cloud Build** pipelines, and **Vertex AI**
+training using a custom GPU Docker image. This also included configuring **Secret Manager** access (e.g., injecting the
+W&B API key) and setting up the cloud-side training/deployment workflow.
+
+Both members contributed to coding, debugging, and reviewing changes via branches and pull requests, and collaborated on
+experiment design and reporting.
+
+**Generative AI usage:** We used **GitHub Copilot** for small code-completion tasks and to speed up writing boilerplate
+(e.g., tests and configuration snippets). All generated suggestions were reviewed and adapted before being committed.
