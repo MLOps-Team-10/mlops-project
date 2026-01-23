@@ -49,6 +49,13 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate EuroSAT model")
 
     parser.add_argument(
+        "--valid-fraction",
+        type=float,
+        default=0.2,
+        help="Fraction of data reserved for validation (only used if you split inside get_dataloaders)",
+    )
+
+    parser.add_argument(
         "--ckpt",
         type=Path,
         required=True,
