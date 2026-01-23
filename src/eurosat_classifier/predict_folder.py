@@ -114,7 +114,7 @@ def load_model(ckpt_path: Path, device: torch.device) -> EuroSATModel:
     )
 
     model = EuroSATModel(config).to(device)
-    
+
     # Fix for torch.compile adding _orig_mod prefix
     state_dict = checkpoint["state_dict"]
     new_state_dict = {}
