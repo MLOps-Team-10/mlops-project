@@ -55,8 +55,12 @@ jobs:
 
       # Build & push training Docker image to Artifact Registry
       - name: Build and push training image (Cloud Build)
-        run: gcloud builds submit . --config=cloud_deploy/cloudbuild.yaml
+        run: gcloud builds submit . --config=cloud_deploy/cloudbuild.yaml --substitutions=_DOCKER_FILE=dockerfiles/train_gpu.dockerfile,_IMAGE_NAME=gpu_cloud_storage_and_saving
 
       # Submit Vertex AI training job using built image
       - name: Submit Vertex AI training job
         run: gcloud builds submit . --config=cloud_deploy/vertex_ai_train.yaml --ignore-file=.deployignore
+
+      # Build & push FastAPI Docker image to Artifact Registry
+      - name: Build and push training image (Cloud Build)
+        run: gcloud builds submit . --config=cloud_deploy/cloudbuild.yaml --substitutions=_DOCKER_FILE=dockerfiles/api.dockerfile,_IMAGE_NAME=fast_api

@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.12-alpine AS base
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS base
 
 COPY uv.lock uv.lock
 COPY pyproject.toml pyproject.toml
@@ -11,4 +11,4 @@ COPY LICENSE LICENSE
 
 RUN uv sync --frozen
 
-ENTRYPOINT ["uv", "run", "uvicorn", "src.eurosat_classifier.api:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["uv", "run", "uvicorn", "src.eurosat_classifier.api:app", "--host", "0.0.0.0", "--port", "80"]

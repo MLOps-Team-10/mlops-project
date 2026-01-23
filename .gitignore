@@ -192,3 +192,6 @@ logs/
 .dvc/config.local
 .dvc/tmp
 .dvc/cache
+
+# GCP service account secret
+service_account_key.json
