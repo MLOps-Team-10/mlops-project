@@ -111,7 +111,7 @@ will check the repositories and the code to verify your answers.
 * [ ] Write some documentation for your application (M32)
 * [ ] Publish the documentation to GitHub Pages (M32)
 * [ ] Revisit your initial project description. Did the project turn out as you wanted?
-* [ ] Create an architectural diagram over your MLOps pipeline
+* [x] Create an architectural diagram over your MLOps pipeline
 * [x] Make sure all group members have an understanding about all parts of the project
 * [x] Uploaded all your code to GitHub
 
@@ -133,7 +133,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
-s253114, s252840 ,s253759, s253055
+s253114, s252840, s252898, s253055, s253759
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
@@ -500,7 +500,13 @@ Link to Dockerfile: [train_gpu.dockerfile](../train_gpu.dockerfile)
 >
 > Answer:
 
---- question 16 fill here ---
+Debugging is handled by logging using the loguru library, rather than print statements. Important updates and information
+are displayed in the console. All of the detailed traces are saved in logs/training.log. If the training run fails, this
+file helps pinpoint the error in the code.
+
+Profiling was performed on the training script to analyze resource usage and identify bottlenecks. The profiling_tools/ directory
+contains 2 scripts to measure performance : one is using native cProfile to display overall stats (such as top 20 demanding functions), and the other is using Pytorch profiler to show advanced metrics in Tensorboard. The cProfile output revealed that training is bottlenecked by input/output latency, rather than GPU compute capacity. The data loading system cannot supply batches of images fast enough to the GPU. An important detail is that
+profiling was performed on a laptop, conclusions might be different if it was done on a cloud server. We mitigated this issue by implementing distributed data loading.
 
 ## Working in the cloud
 
@@ -550,10 +556,10 @@ could run on GCP-managed hardware. We tested two approaches: a "plain VM" workfl
 access the dataset, and write outputs; and a containerized workflow where we pulled/built and ran our **Docker-based**
 training setup to verify dependency and runtime consistency.
 
-We briefly used low-cost **standard CPU VMs** for quick validation and then experimented with a **GPU VM** using an
-**NVIDIA T4** to confirm CUDA/PyTorch compatibility and that our code ran end-to-end on GPU hardware.
+We briefly used low-cost standard CPU VMs for quick validation and then experimented with a GPU VM using an
+NVIDIA T4 to confirm CUDA/PyTorch compatibility and that our code ran end-to-end on GPU hardware.
 
-Compute Engine was ultimately **not used in the final pipeline**. Once we moved to **Vertex AI Custom Jobs** with our
+Compute Engine was ultimately not used in the final pipeline. Once we moved to Vertex AI Custom Jobs with our
 custom GPU training container, it provided a more purpose-built managed training interface and cleaner integration with
 Cloud Build and Artifact Registry, so Compute Engine remained an exploration step rather than a core component.
 
@@ -573,7 +579,7 @@ Cloud Build and Artifact Registry, so Compute Engine remained an exploration ste
 >
 > Answer:
 
-![list of docker images](figures/artfiacts_general_view.png)
+![Docker images](figures/artfiacts.png)
 
 ### Question 21
 
@@ -646,6 +652,7 @@ This approach ensures the container image remains lightweight and allows for sea
 > *`curl -X POST -F "file=@file.json"<weburl>`*
 >
 > Answer:
+
 The API was containerized using Docker, encapsulating the Python environment, dependencies (managed via uv), and the FastAPI application into a single portable image.
 This container is deployed using Google Cloud Run, a serverless platform that automatically scales the service based on incoming traffic.
 The deployed service can be accessed via its public URL using two primary methods:
@@ -682,7 +689,8 @@ the test is designed to skip safely rather than fail. In addition, we added a tr
 to replace heavy components (real dataloaders, optimizer, validation) and verifies that the training loop correctly saves
 the “best” checkpoint (eurosat_best.pth).
 
----api test---
+We used Locust to simulate high user traffic. The results confirm the server handles at least 100,000 concurrent users. The current bottleneck is caused by  saturation of our machines sending the requests, not the server itself. Actual capacity will depend on cloud resource allocation and user wait times.
+![Load_test](reports/figures/api_load_test.png)
 ### Question 26
 
 > **Did you manage to implement monitoring of your deployed model? If yes, explain how it works. If not, explain how**
@@ -847,6 +855,8 @@ W&B API key) and setting up the cloud-side training/deployment workflow.
 Student **s253759** was in charge of the core scalability and production-facing components of the project,
  including Distributed Data Loading optimization, FastAPI model serving, and Weights & Biases (W&B) experiment tracking.
 This involved implementing a parallelized data pipeline and multi-processing workers to eliminate CPU bottlenecks, as well as developing a RESTful API for real-time inference.
+
+Student s252898 developed the FastAPI application, as well as validating its reliability under stress by testing it under load via Locust. They also implemented performance analysis framework using cProfile and Pytorch profiler to diagnose bottlenecks.
 
 **Scalable Data Loading**: Implementing and profiling multi-core data loading to achieve a 3x speedup, ensuring the training process remained saturated even on CPU-limited hardware.
 

@@ -1,8 +1,9 @@
+#!/usr/bin/env python3
 import pstats
 import sys
 
 # Default to 'training_profile.prof' if no file is specified
-profile_file = "training_profile.prof"
+profile_file = "profiling_tools/training_profile.prof"
 if len(sys.argv) > 1:
     profile_file = sys.argv[1]
 

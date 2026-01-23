@@ -11,4 +11,6 @@ COPY LICENSE LICENSE
 
 RUN uv sync --frozen
 
-ENTRYPOINT ["uv", "run", "uvicorn", "src.eurosat_classifier.api:app", "--host", "0.0.0.0", "--port", "80"]
+
+# Use sh -c to expand the $PORT variable
+ENTRYPOINT ["sh", "-c", "uv run uvicorn src.eurosat_classifier.api:app --host 0.0.0.0 --port $PORT"]
