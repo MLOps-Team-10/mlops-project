@@ -133,7 +133,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
-s253114, s252840 , s253759
+s253114, s252840, s252898 , s253759
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
@@ -257,11 +257,13 @@ team members while improving long-term maintainability.
 >
 > Answer:
 
-In total we implemented 3 tests. The first test validates the training workflow by mocking the model, dataloaders and
+In total we implemented 4 tests. The first test validates the training workflow by mocking the model, dataloaders and
 validation step, and checks that the best checkpoint is saved (i.e., eurosat_best.pth is written when validation improves).
 The second test covers the model forward pass, ensuring EuroSATModel can be instantiated and produces logits with the
 expected shape for typical EuroSAT inputs. The third test verifies the data pipeline, checking that get_dataloaders returns
 non-empty DataLoaders and yields correctly shaped RGB batches, skipping gracefully if the dataset is not available.
+The fourth and last test checks the API's capability to perform under heavy load using Locust, which simulates a swarm of
+users simultaneously sending mainly POST requests to the server.
 
 ### Question 8
 
@@ -486,7 +488,13 @@ Link to Dockerfile: [train_gpu.dockerfile](../train_gpu.dockerfile)
 >
 > Answer:
 
---- question 16 fill here ---
+Debugging is handled by logging using the loguru library, rather than print statements. Important updates and information
+are displayed in the console. All of the detailed traces are saved in logs/training.log. If the training run fails, this
+file helps pinpoint the error in the code.
+
+Profiling was performed on the training script to analyze resource usage and identify bottlenecks. The profiling_tools/ directory
+contains 2 scripts to measure performance : one is using native cProfile to display overall stats (such as top 20 demanding functions), and the other is using Pytorch profiler to show advanced metrics in Tensorboard. The cProfile output revealed that training is bottlenecked by input/output latency, rather than GPU compute capacity. The data loading system cannot supply batches of images fast enough to the GPU. An important detail is that
+profiling was performed on a laptop, conclusions might be different if it was done on a cloud server. We mitigated this issue by implementing distributed data loading.
 
 ## Working in the cloud
 
@@ -665,7 +673,8 @@ the test is designed to skip safely rather than fail. In addition, we added a tr
 to replace heavy components (real dataloaders, optimizer, validation) and verifies that the training loop correctly saves
 the “best” checkpoint (eurosat_best.pth).
 
----api test---
+We used Locust to simulate high user traffic. The results confirm the server handles at least 100,000 concurrent users. The current bottleneck is caused by  saturation of our machines sending the requests, not the server itself. Actual capacity will depend on cloud resource allocation and user wait times.
+![Load_test](reports/figures/api_load_test.png)
 ### Question 26
 
 > **Did you manage to implement monitoring of your deployed model? If yes, explain how it works. If not, explain how**
@@ -830,6 +839,8 @@ W&B API key) and setting up the cloud-side training/deployment workflow.
 Student **s253759** was in charge of the core scalability and production-facing components of the project,
  including Distributed Data Loading optimization, FastAPI model serving, and Weights & Biases (W&B) experiment tracking.
 This involved implementing a parallelized data pipeline and multi-processing workers to eliminate CPU bottlenecks, as well as developing a RESTful API for real-time inference.
+
+Student s252898 developed the FastAPI application, as well as validating its reliability under stress by testing it under load via Locust. They also implemented performance analysis framework using cProfile and Pytorch profiler to diagnose bottlenecks.
 
 **Scalable Data Loading**: Implementing and profiling multi-core data loading to achieve a 3x speedup, ensuring the training process remained saturated even on CPU-limited hardware.
 
