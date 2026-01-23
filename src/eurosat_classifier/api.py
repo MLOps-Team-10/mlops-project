@@ -7,9 +7,10 @@ from PIL import Image
 from torchvision import transforms
 from eurosat_classifier.model import EuroSATModel, ModelConfig
 from google.cloud import storage
+
 app = FastAPI()
 
-BUCKET_NAME = "dtu-mlops-eurosat" 
+BUCKET_NAME = "dtu-mlops-eurosat"
 SOURCE_BLOB_NAME = "eurosat/models/eurosat_best.pth"
 DESTINATION_FILE_NAME = "eurosat_best.pth"
 
@@ -31,6 +32,7 @@ def download_model():
             raise
     else:
         print("Model already exists locally, skipping download.")
+
 
 # Download the model before initializing PyTorch
 download_model()
@@ -55,11 +57,13 @@ model.load_state_dict(state_dict)
 model.to(device)
 model.eval()
 
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
+transform = transforms.Compose(
+    [
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+)
 
 
 @app.get("/")
@@ -71,7 +75,7 @@ async def health():
 async def predict(
     # Using Annotated[UploadFile, File(...)] forces Swagger UI to show an upload button
     file: Annotated[UploadFile, File(description="A satellite image (AnnualCrop, Forest, etc.)")],
-    max_length: int = Query(default=10, description="hyperparameter")
+    max_length: int = Query(default=10, description="hyperparameter"),
 ):
     # 3. Read and Preprocess Image
     image_bytes = await file.read()
@@ -83,14 +87,23 @@ async def predict(
         logits = model(tensor)
         prediction = logits.argmax(dim=1).item()
 
-    #Mapping indices to class names
-    class_names = ["AnnualCrop", "Forest", "HerbaceousVegetation", "Highway", 
-                   "Industrial", "Pasture", "PermanentCrop", "Residential", 
-                   "River", "SeaLake"]
+    # Mapping indices to class names
+    class_names = [
+        "AnnualCrop",
+        "Forest",
+        "HerbaceousVegetation",
+        "Highway",
+        "Industrial",
+        "Pasture",
+        "PermanentCrop",
+        "Residential",
+        "River",
+        "SeaLake",
+    ]
 
     return {
         "filename": file.filename,
         "prediction": class_names[prediction],
         "class_index": prediction,
-        "meta_max_length": max_length
+        "meta_max_length": max_length,
     }
