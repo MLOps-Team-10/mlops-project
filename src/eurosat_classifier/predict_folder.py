@@ -66,6 +66,29 @@ def build_transform() -> transforms.Compose:
     )
 
 
+def get_model_checkpoint_path() -> Path:
+    """
+    Determine the model checkpoint path.
+
+    Priority:
+    - GCS path (for cloud deployments)
+    - Local models/ directory (for GitHub Actions with DVC)
+
+    Returns the first available path.
+    """
+    gcs_path = Path("/gcs/dtu-mlops-eurosat/eurosat/models/eurosat_best.pth")
+    local_path = Path("models/eurosat_best.pth")
+
+    if gcs_path.exists():
+        logger.info("Using GCS model path")
+        return gcs_path
+    elif local_path.exists():
+        logger.info("Using local model path")
+        return local_path
+    else:
+        raise FileNotFoundError(f"Model not found at {gcs_path} or {local_path}")
+
+
 def load_model(ckpt_path: Path, device: torch.device) -> EuroSATModel:
     """
     Load a trained EuroSAT model from a checkpoint.
@@ -145,8 +168,8 @@ def predict_folder(folder_path: str = "data/test"):
     """
     device = select_device()
     transform = build_transform()
-    model = load_model(Path("models/eurosat_best.pth"), device)
-
+    ckpt_path = get_model_checkpoint_path()
+    model = load_model(ckpt_path, device)
     folder = Path(folder_path)
     image_paths = sorted(p for p in folder.iterdir() if p.suffix.lower() in {".jpg", ".jpeg", ".png"})
 
