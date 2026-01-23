@@ -593,9 +593,9 @@ still letting us run the exact same Docker image locally and in the cloud.
 >
 > Answer:
 
-The EuroSAT image classification model has been successfully integrated into a RESTful API using the FastAPI framework. 
+The EuroSAT image classification model has been successfully integrated into a RESTful API using the FastAPI framework.
 The implementation is designed for scalability and maintains a clear separation between the application logic and model assets.
-A specialized initialization routine was developed to programmatically retrieve model weights from Google Cloud Storage (GCS) during the application's startup phase. 
+A specialized initialization routine was developed to programmatically retrieve model weights from Google Cloud Storage (GCS) during the application's startup phase.
 This approach ensures the container image remains lightweight and allows for seamless model updates without code redeployment.
 **Technical Highlights:**
 **State Dict Sanitization**: The code includes a robust mechanism to detect and remove _orig_mod. prefixes from the model's state dictionary. This ensures compatibility with models previously optimized via torch.compile, preventing runtime crashes during loading.
@@ -615,10 +615,10 @@ This approach ensures the container image remains lightweight and allows for sea
 > *`curl -X POST -F "file=@file.json"<weburl>`*
 >
 > Answer:
-The API was containerized using Docker, encapsulating the Python environment, dependencies (managed via uv), and the FastAPI application into a single portable image. 
+The API was containerized using Docker, encapsulating the Python environment, dependencies (managed via uv), and the FastAPI application into a single portable image.
 This container is deployed using Google Cloud Run, a serverless platform that automatically scales the service based on incoming traffic.
 The deployed service can be accessed via its public URL using two primary methods:
-Interactive Documentation (Swagger UI): Users can navigate to the /docs endpoint in their browser. 
+Interactive Documentation (Swagger UI): Users can navigate to the /docs endpoint in their browser.
 Thanks to the Annotated parameters in the code, the UI provides a user-friendly "Try it out" button and a file upload prompt for testing predictions directly.
 CLI/REST Clients: The service is invoked via a POST request to the /predict endpoint.
 To invoke the service an user would call:
@@ -750,7 +750,7 @@ training using a custom GPU Docker image. This also included configuring **Secre
 W&B API key) and setting up the cloud-side training/deployment workflow.
 
 Student **s253759** was in charge of the core scalability and production-facing components of the project,
- including Distributed Data Loading optimization, FastAPI model serving, and Weights & Biases (W&B) experiment tracking. 
+ including Distributed Data Loading optimization, FastAPI model serving, and Weights & Biases (W&B) experiment tracking.
 This involved implementing a parallelized data pipeline and multi-processing workers to eliminate CPU bottlenecks, as well as developing a RESTful API for real-time inference.
 
 **Scalable Data Loading**: Implementing and profiling multi-core data loading to achieve a 3x speedup, ensuring the training process remained saturated even on CPU-limited hardware.
