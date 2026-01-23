@@ -13,3 +13,5 @@ workerPoolSpecs:
           value: mlops-project
         - name: WANDB_ENTITY
           value: s252840-danmarks-tekniske-universitet-dtu
+        - name: HYDRA_FULL_ERROR
+          value: "1"
