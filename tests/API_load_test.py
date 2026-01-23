@@ -1,5 +1,3 @@
-import random
-import os
 from locust import HttpUser, between, task
 
 
