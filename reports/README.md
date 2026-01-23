@@ -725,7 +725,25 @@ carefully.
 >
 > Answer:
 
---- question 29 fill here ---
+![Figure](figures/graph.svg) The graph summarizes the overall architecture of our system, from local development to cloud training and
+online serving.
+
+We started locally, where we worked in an isolated Python environment managed with uv and kept the project
+configurable using Hydra. Before code is pushed, pre-commit runs hygiene checks and enforces formatting.
+During experimentation, training runs log metrics and configuration to Weights & Biases to ensure traceability and
+reproducibility.
+
+When code is pushed to GitHub or a pull request is opened against main, GitHub Actions runs our CI workflows. We use a
+matrix across Linux, Windows, and macOS, and validate against Python 3.11 and 3.12 to catch platform-specific issues
+early. The CI performs formatting and lint checks using Ruff, runs unit tests with Pytest, and performs static type
+checking with Mypy (kept as a “soft gate” while the codebase evolves). To speed up these repeated checks, we enable
+uv caching, which reduces dependency installation time across jobs and operating systems.
+
+After changes are merged to main, the cloud pipeline is triggered. The dataset is versioned with DVC and stored in
+Google Cloud Storage (GCS); the workflow pulls the required data via dvc pull. We build Docker images with Cloud Build,
+run training on Vertex AI, and produce a “best checkpoint” model artifact. Finally, we package the FastAPI service into
+a container, push it to Artifact Registry, and deploy it to Cloud Run, where users can query the model through an HTTP
+endpoint.
 
 ### Question 30
 
