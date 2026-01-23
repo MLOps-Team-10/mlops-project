@@ -133,7 +133,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
-s253114, s252840
+s253114, s252840 , s253759
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
@@ -356,7 +356,24 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 >
 > Answer:
 
---- question 11 fill here ---
+We have designed our continuous integration pipeline to be modular, explicit, and aligned with MLOps best practices.
+It is organized into three separate GitHub Actions workflows, each with a clear responsibility: code quality checks, unit
+testing, and deployment/training automation.
+First, we use a Codecheck workflow that runs on every pull request targeting the main branch. This workflow acts as a
+quality gate and focuses on code hygiene and static analysis. It runs pre-commit hooks (e.g. whitespace checks, YAML/TOML
+validation, secret detection), Ruff for formatting and linting, and Mypy for static type checking.
+While pre-commit is also executed locally by developers, enforcing it in CI guarantees consistency across contributors
+and environments.
+Second, we maintain a dedicated Tests workflow for unit testing. Every test is executed with pytest and are run in a
+matrix setup across multiple operating systems (Ubuntu, Windows, macOS) and multiple Python versions (3.11 and 3.12).
+This ensures that our codebase is portable and behaves consistently across platforms, which is especially important for
+machine learning pipelines that may rely on OS-specific dependencies.
+Third, we have a Train and Deploy workflow triggered on pushes to main. This workflow integrates MLOps-specific steps
+such as pulling data with DVC, building Docker images via Google Cloud Build, submitting training jobs to Vertex AI,
+and deploying a FastAPI inference service.
+Across all workflows, we make extensive use of dependency caching via uv, significantly reducing CI execution time by
+reusing previously resolved dependencies. An example workflow configuration can be found in our repository under
+.github/workflows/codecheck.yaml.
 
 ## Running code and tracking experiments
 
@@ -410,14 +427,14 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 As shown in the screenshot below, we used Weights & Biases (W&B) to track both batch-level training metrics and epoch-level
 validation metrics for our EuroSAT experiments.
 
-During training, we logged **train loss** and **train accuracy** **per batch**. Logging these at a high frequency is
+During training, we logged train loss and train accuracy per batch. Logging these at a high frequency is
 useful for monitoring optimization dynamics in near real time: the training loss should generally decrease as the model
 learns, while training accuracy should increase. Batch-level curves also make it easy to spot instability early (e.g.,
 diverging loss, spikes due to an overly high learning rate, or noisy gradients from an aggressive batch size).
 
-After each epoch, we evaluated on a held-out validation split and logged **validation loss** and **validation accuracy**.
+After each epoch, we evaluated on a held-out validation split and logged validation loss and validation accuracy.
 These metrics are important because they provide a more reliable proxy for generalization than training metrics. In
-particular, comparing training vs. validation curves helps diagnose **overfitting**: if training loss keeps decreasing
+particular, comparing training vs. validation curves helps diagnose overfitting: if training loss keeps decreasing
 while validation loss plateaus or increases, the model is likely memorizing the training set. Conversely, if both training
 and validation metrics improve steadily, it indicates that the learned representations generalize.
 
@@ -593,7 +610,14 @@ still letting us run the exact same Docker image locally and in the cloud.
 >
 > Answer:
 
---- question 23 fill here ---
+The EuroSAT image classification model has been successfully integrated into a RESTful API using the FastAPI framework.
+The implementation is designed for scalability and maintains a clear separation between the application logic and model assets.
+A specialized initialization routine was developed to programmatically retrieve model weights from Google Cloud Storage (GCS) during the application's startup phase.
+This approach ensures the container image remains lightweight and allows for seamless model updates without code redeployment.
+**Technical Highlights:**
+**State Dict Sanitization**: The code includes a robust mechanism to detect and remove _orig_mod. prefixes from the model's state dictionary. This ensures compatibility with models previously optimized via torch.compile, preventing runtime crashes during loading.
+**Input Validation**: By utilizing Annotated types and FastAPI's UploadFile, the service enforces strict validation of image inputs and hyperparameter queries (e.g., max_length), while automatically generating interactive documentation.
+**Performance Optimization**: The API supports asynchronous request handling and dynamic device detection (CUDA/CPU) to optimize inference throughput.
 
 ### Question 24
 
@@ -608,8 +632,17 @@ still letting us run the exact same Docker image locally and in the cloud.
 > *`curl -X POST -F "file=@file.json"<weburl>`*
 >
 > Answer:
-
---- question 24 fill here ---
+The API was containerized using Docker, encapsulating the Python environment, dependencies (managed via uv), and the FastAPI application into a single portable image.
+This container is deployed using Google Cloud Run, a serverless platform that automatically scales the service based on incoming traffic.
+The deployed service can be accessed via its public URL using two primary methods:
+Interactive Documentation (Swagger UI): Users can navigate to the /docs endpoint in their browser.
+Thanks to the Annotated parameters in the code, the UI provides a user-friendly "Try it out" button and a file upload prompt for testing predictions directly.
+CLI/REST Clients: The service is invoked via a POST request to the /predict endpoint.
+To invoke the service an user would call:
+curl -X 'POST' 'https://eurosat-api-abc123.a.run.app/predict' \
+     -H 'accept: application/json' \
+     -H 'Content-Type: multipart/form-data' \
+     -F 'file=@satellite_view.png'
 
 ### Question 25
 
@@ -624,8 +657,15 @@ still letting us run the exact same Docker image locally and in the cloud.
 >
 > Answer:
 
---- question 25 fill here ---
+Yes, we performed unit testing of the core components using pytest. Our tests cover both “pure” model behavior and
+pipeline integration points. For example, we test that EuroSATModel can be instantiated and produces logits of the expected
+shape on a dummy input batch (sanity check for forward pass). We also test the data pipeline by validating that get_dataloaders()
+returns valid DataLoader objects and yields correctly shaped tensors. Where the real EuroSAT dataset may not be present in CI,
+the test is designed to skip safely rather than fail. In addition, we added a training-related unit test that uses monkeypatching
+to replace heavy components (real dataloaders, optimizer, validation) and verifies that the training loop correctly saves
+the “best” checkpoint (eurosat_best.pth).
 
+---api test---
 ### Question 26
 
 > **Did you manage to implement monitoring of your deployed model? If yes, explain how it works. If not, explain how**
@@ -639,8 +679,10 @@ still letting us run the exact same Docker image locally and in the cloud.
 >
 > Answer:
 
---- question 26 fill here ---
-
+We did not implement monitoring of the deployed model in this project. Due to time constraints and the overall scope of
+the assignment, we prioritized building a complete and reproducible MLOps pipeline, including data versioning, continuous
+integration, training, and cloud deployment. While monitoring is an important component of production-grade systems,
+it was considered out of scope for the main learning objectives of the project.
 ## Overall discussion of project
 
 > In the following section we would like you to think about the general structure of your project.
@@ -658,8 +700,18 @@ still letting us run the exact same Docker image locally and in the cloud.
 >
 > Answer:
 
---- question 27 fill here ---
+During the project we relied almost entirely on the free Google Cloud credits provided for the course.
+According to the final cost breakdown, the total gross cloud usage amounted to approximately $1.78, which was fully
+offset by savings and credits, resulting in $0.00 of actual charges.
+The service with the highest nominal cost was Cloud Storage (about $1.17), mainly due to storing datasets and model
+artifacts. Other services such as Vertex AI, Cloud Build, Artifact Registry, Compute Engine, and Cloud Run contributed
+only marginally to the overall cost, each remaining well below one dollar. Vertex AI incurred some usage due to training
+experiments, while Cloud Build and Artifact Registry were used for containerized training and deployment workflows.
 
+Overall, working in the cloud was a very positive experience. It enabled us to prototype, train, and deploy models in a
+scalable and reproducible way without worrying about local hardware limitations. At the same time, this project
+highlighted the importance of cost awareness: even small experiments can generate expenses if resources are not managed
+carefully.
 ### Question 28
 
 > **Did you implement anything extra in your project that is not covered by other questions? Maybe you implemented**
@@ -691,7 +743,25 @@ still letting us run the exact same Docker image locally and in the cloud.
 >
 > Answer:
 
---- question 29 fill here ---
+![Figure](figures/graph.svg) The graph summarizes the overall architecture of our system, from local development to cloud training and
+online serving.
+
+We started locally, where we worked in an isolated Python environment managed with uv and kept the project
+configurable using Hydra. Before code is pushed, pre-commit runs hygiene checks and enforces formatting.
+During experimentation, training runs log metrics and configuration to Weights & Biases to ensure traceability and
+reproducibility.
+
+When code is pushed to GitHub or a pull request is opened against main, GitHub Actions runs our CI workflows. We use a
+matrix across Linux, Windows, and macOS, and validate against Python 3.11 and 3.12 to catch platform-specific issues
+early. The CI performs formatting and lint checks using Ruff, runs unit tests with Pytest, and performs static type
+checking with Mypy (kept as a “soft gate” while the codebase evolves). To speed up these repeated checks, we enable
+uv caching, which reduces dependency installation time across jobs and operating systems.
+
+After changes are merged to main, the cloud pipeline is triggered. The dataset is versioned with DVC and stored in
+Google Cloud Storage (GCS); the workflow pulls the required data via dvc pull. We build Docker images with Cloud Build,
+run training on Vertex AI, and produce a “best checkpoint” model artifact. Finally, we package the FastAPI service into
+a container, push it to Artifact Registry, and deploy it to Cloud Run, where users can query the model through an HTTP
+endpoint.
 
 ### Question 30
 
@@ -705,8 +775,32 @@ still letting us run the exact same Docker image locally and in the cloud.
 >
 > Answer:
 
---- question 30 fill here ---
+One of the main struggles of the project was managing the overall system complexity rather than implementing individual
+components. While each tool we used is powerful on its own, integrating them into a coherent and reproducible MLOps
+pipeline required significant effort.
 
+A large portion of the time was spent on continuous integration and workflow orchestration. Designing CI pipelines that
+were fast, non-duplicated, and meaningful was challenging, especially when combining pre-commit hooks, linting, type
+checking, unit testing, and multi-platform test matrices. We initially faced duplicated workflow executions and long
+feedback loops, and this was addressed by carefully separating responsibilities across multiple workflows (code hygiene,
+testing, and training/deployment) and by using GitHub Actions features such as concurrency groups, branch filters, and
+caching via uv.
+
+Another major challenge was data and artifact management. Ensuring that training data, model checkpoints, and
+configuration files stayed in sync across local development, CI, and cloud execution was non-trivial.
+We used DVC to version the dataset, which solved reproducibility issues
+but introduced additional complexity in authentication and CI integration. Similarly, managing trained models across
+Vertex AI and Cloud Run required careful coordination to avoid missing or incompatible artifacts.
+
+In addition, task management and dependency tracking within the team proved to be a significant difficulty.
+Many tasks were tightly coupled, for example CI changes depending on repository structure updates, or deployment steps
+depending on training and artifact availability. This made parallel work harder and increased coordination overhead.
+We mitigated this by breaking tasks into smaller incremental steps and clearly defining expectations between components,
+which helped keep progress manageable despite the interdependencies.
+
+We also spent considerable time on cloud deployment and debugging. Issues related to container architectures, missing
+model files at runtime, and Cloud Run startup failures required iterative debugging using local Docker runs and cloud logs.
+These problems highlighted the importance of validating containers locally and clearly defining runtime assumptions.
 ### Question 31
 
 > **State the individual contributions of each team member. This is required information from DTU, because we need to**
@@ -733,7 +827,17 @@ Student **s252840** was in charge of the Google Cloud part of the project, inclu
 training using a custom GPU Docker image. This also included configuring **Secret Manager** access (e.g., injecting the
 W&B API key) and setting up the cloud-side training/deployment workflow.
 
-Both members contributed to coding, debugging, and reviewing changes via branches and pull requests, and collaborated on
+Student **s253759** was in charge of the core scalability and production-facing components of the project,
+ including Distributed Data Loading optimization, FastAPI model serving, and Weights & Biases (W&B) experiment tracking.
+This involved implementing a parallelized data pipeline and multi-processing workers to eliminate CPU bottlenecks, as well as developing a RESTful API for real-time inference.
+
+**Scalable Data Loading**: Implementing and profiling multi-core data loading to achieve a 3x speedup, ensuring the training process remained saturated even on CPU-limited hardware.
+
+**API Development & Containerization**: Building a robust FastAPI application capable of dynamically pulling model weights from Google Cloud Storage and handling image classification requests.
+
+**Experiment Tracking**: Integrating W&B logging to monitor training metrics, hardware utilization, and model performance across different experimental configurations.
+
+All members contributed to coding, debugging, and reviewing changes via branches and pull requests, and collaborated on
 experiment design and reporting.
 
 **Generative AI usage:** We used **GitHub Copilot** for small code-completion tasks and to speed up writing boilerplate

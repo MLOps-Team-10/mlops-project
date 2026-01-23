@@ -1,0 +1,52 @@
+substitutions:
+  _AR_REGION: europe-west1
+  _AR_REPO: eurosat
+  _IMAGE_NAME: eurosat-api
+  _IMAGE_TAG: latest
+  _SERVICE: eurosat-api
+  _RUN_REGION: europe-west1
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    id: Build API container
+    env:
+      - DOCKER_BUILDKIT=1
+    args:
+      - build
+      - .
+      - -t
+      - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:${_IMAGE_TAG}
+      - -f
+      - cloud_deploy/app.dockerfile
+
+  - name: gcr.io/cloud-builders/docker
+    id: Push API container
+    args:
+      - push
+      - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:${_IMAGE_TAG}
+
+  - name: gcr.io/cloud-builders/gcloud
+    id: Deploy to Cloud Run
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image
+      - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:${_IMAGE_TAG}
+      - --region
+      - ${_RUN_REGION}
+      - --platform
+      - managed
+      - --allow-unauthenticated
+      - --port
+      - "8080"
+      - --memory
+      - 2Gi
+      - --cpu
+      - "2"
+      - --cpu-boost
+      - --timeout
+      - 600s
+
+images:
+  - ${_AR_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:${_IMAGE_TAG}

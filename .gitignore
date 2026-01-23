@@ -178,6 +178,7 @@ cython_debug/
 
 # Ignore EuroSAT raw data subfolders
 data/raw/eurosat_rgb/
+models/
 /data_zip
 
 # Wandb output
@@ -192,3 +193,6 @@ logs/
 .dvc/config.local
 .dvc/tmp
 .dvc/cache
+
+# GCP service account secret
+service_account_key.json

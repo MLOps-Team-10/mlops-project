@@ -114,7 +114,17 @@ def load_model(ckpt_path: Path, device: torch.device) -> EuroSATModel:
     )
 
     model = EuroSATModel(config).to(device)
-    model.load_state_dict(checkpoint["state_dict"])
+
+    # Fix for torch.compile adding _orig_mod prefix
+    state_dict = checkpoint["state_dict"]
+    new_state_dict = {}
+    for k, v in state_dict.items():
+        if k.startswith("_orig_mod."):
+            new_state_dict[k.replace("_orig_mod.", "")] = v
+        else:
+            new_state_dict[k] = v
+
+    model.load_state_dict(new_state_dict)
     model.eval()
 
     return model
@@ -188,4 +198,4 @@ def predict_folder(folder_path: str = "data/test"):
 # Allows this file to be imported without triggering inference,
 # while still supporting direct execution.
 if __name__ == "__main__":
-    predict_folder("data/test")
+    predict_folder("data/Earth")
