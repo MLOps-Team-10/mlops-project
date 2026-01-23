@@ -19,7 +19,8 @@ def download_model():
     if not os.path.exists(DESTINATION_FILE_NAME):
         try:
             print(f"Downloading model {SOURCE_BLOB_NAME} from bucket {BUCKET_NAME}...")
-            creds_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "mlops-exercises-484210-7592bc1e85e6.json")
+            creds_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "service_account_key.json")
+            print(f"CREDS VALUE: {creds_path}")
             client = storage.Client.from_service_account_json(creds_path)
             bucket = client.bucket(BUCKET_NAME)
             blob = bucket.blob(SOURCE_BLOB_NAME)
