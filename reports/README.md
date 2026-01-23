@@ -294,33 +294,6 @@ coverage as a feedback metric to find untested areas, not as proof of correctnes
 | `train.py`                 | 123        | 36      | 71%      | 28–44, 65–67, 86–108, 258–279, 296 |
 | **TOTAL**                  | **357**    | **214** | **40%**  |                                    |
 
-Name                                              Stmts   Miss  Cover   Missing
--------------------------------------------------------------------------------
-src/eurosat_classifier/api.py                        53     53     0%   1-104
-src/eurosat_classifier/data.py                       26     11    58%   4, 8, 22-38, 66-73, 99
-src/eurosat_classifier/evaluate.py                   55     55     0%   1-134
-src/eurosat_classifier/model.py                      27     13    52%   23, 36-39, 52-69, 73-100
-src/eurosat_classifier/predict_folder.py             71     71     0%   1-201
-src/eurosat_classifier/scripts/download_data.py      92     81    12%   8, 10, 15-17, 21-35, 56-188
-src/eurosat_classifier/test.py                       30     30     0%   3-89
-src/eurosat_classifier/train.py                     152     92    39%   2, 5-7, 15, 19-20, 22-38, 57-69, 84-102, 125-133, 137-140, 166-167, 172, 175, 186, 214, 218, 222, 225-226, 230, 236, 238-239, 248, 251-292, 296-354
--------------------------------------------------------------------------------
-
-Here is the **updated first table**, using the data from the **second coverage report** and keeping the same structure and naming style as your original table.
-
-| File                       | Statements | Missed  | Coverage | Missing Lines                                                                                                                                       |
-| -------------------------- | ---------- | ------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `api.py`                   | 53         | 53      | 0%       | 1–104                                                                                                                                               |
-| `data.py`                  | 26         | 11      | 58%      | 4, 8, 22–38, 66–73, 99                                                                                                                              |
-| `evaluate.py`              | 55         | 55      | 0%       | 1–134                                                                                                                                               |
-| `model.py`                 | 27         | 13      | 52%      | 23, 36–39, 52–69, 73–100                                                                                                                            |
-| `predict_folder.py`        | 71         | 71      | 0%       | 1–201                                                                                                                                               |
-| `scripts/download_data.py` | 92         | 81      | 12%      | 8, 10, 15–17, 21–35, 56–188                                                                                                                         |
-| `test.py`                  | 30         | 30      | 0%       | 3–89                                                                                                                                                |
-| `train.py`                 | 152        | 92      | 39%      | 2, 5–7, 15, 19–20, 22–38, 57–69, 84–102, 125–133, 137–140, 166–167, 172, 175, 186, 214, 218, 222, 225–226, 230, 236, 238–239, 248, 251–292, 296–354 |
-| **TOTAL**                  | **506**    | **406** | **20%**  |                                                                                                                                                     |
-
-
 ### Question 9
 
 > **Did you workflow include using branches and pull requests? If yes, explain how. If not, explain how branches and**
@@ -407,7 +380,17 @@ Across all workflows, we make extensive use of **dependency caching via `uv`**, 
 >
 > Answer:
 
---- question 12 fill here ---
+We configured experiments using Hydra with YAML-based configuration files. A main `config.yaml` defines defaults for data,
+model, and training, which are composed at runtime. The experiment entry point is decorated with `@hydra.main`, allowing
+configuration overrides directly from the command line.
+For example, an experiment can be run as:
+
+```sh
+uv run python src/eurosat_classifier/train.py training.learning_rate=1e-3 training.epochs=20
+```
+
+Hydra automatically loads and merges the configurations, enabling clean experiment management without modifying code while
+supporting scalable experimentation.
 
 ### Question 13
 
@@ -422,7 +405,15 @@ Across all workflows, we make extensive use of **dependency caching via `uv`**, 
 >
 > Answer:
 
---- question 13 fill here ---
+To ensure reproducibility, we relied on Hydra's configuration management and experiment tracking behavior.
+All hyperparameters and experiment settings are defined in version-controlled YAML config files
+(e.g. [config.yaml](../src/eurosat_classifier/conf/config.yaml), [training/default.yaml](../src/eurosat_classifier/conf/training/default.yaml)).
+When an experiment is launched, Hydra resolves the full configuration and stores it together with logs and outputs, ensuring that no information is lost.
+
+Each run is fully defined by its resolved config, meaning that results are not dependent on hardcoded values or hidden parameters.
+Since configurations are immutable during execution, accidental changes are avoided.
+To reproduce an experiment, one only needs the exact config files (or the overridden parameters) and the same code version.
+By rerunning the experiment with the same command-line overrides, the training setup and results can be reliably reproduced across machines and over time.
 
 ### Question 14
 
@@ -475,7 +466,7 @@ performance rather than only optimizing for training behavior.
 
 We used Docker to ensure a reproducible runtime for both local runs and cloud training. In particular, we built a GPU-enabled
 training image that bundles our source code, pinned Python dependencies, and the CUDA-compatible PyTorch stack. This removed
-“works on my machine” issues and made it straightforward to run the same training entrypoint locally, in CI, and on GCP.
+"works on my machine" issues and made it straightforward to run the same training entrypoint locally, in CI, and on GCP.
 
 For cloud training we used the image as a **custom container** for Vertex AI. The container is built in Google Cloud Build
 and pushed to Artifact Registry, after which a Vertex AI CustomJob launches the container on a GPU machine and executes our
@@ -579,7 +570,7 @@ Cloud Build and Artifact Registry, so Compute Engine remained an exploration ste
 >
 > Answer:
 
-![Docker images](figures/artfiacts.png)
+![list of docker images](figures/artifacts_general_view.png)
 
 ### Question 21
 
@@ -662,10 +653,11 @@ CLI/REST Clients: The service is invoked via a POST request to the /predict endp
 To invoke the service an user would call:
 
 ```bash
-curl -X 'POST' 'https://eurosat-api-abc123.a.run.app/predict' \
-     -H 'accept: application/json' \
-     -H 'Content-Type: multipart/form-data' \
-     -F 'file=@satellite_view.png'
+curl -X POST \
+  https://eurosat-fast-api-1016331340552.europe-west1.run.app/predict \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@AnnualCrop_2.jpg"
 ```
 
 ### Question 25
@@ -689,8 +681,11 @@ the test is designed to skip safely rather than fail. In addition, we added a tr
 to replace heavy components (real dataloaders, optimizer, validation) and verifies that the training loop correctly saves
 the “best” checkpoint (eurosat_best.pth).
 
-We used Locust to simulate high user traffic. The results confirm the server handles at least 100,000 concurrent users. The current bottleneck is caused by  saturation of our machines sending the requests, not the server itself. Actual capacity will depend on cloud resource allocation and user wait times.
+We used Locust to simulate high user traffic. The results confirm the server handles at least 100,000 concurrent users.
+The current bottleneck is caused by  saturation of our machines sending the requests, not the server itself.
+Actual capacity will depend on cloud resource allocation and user wait times.
 ![Load_test](reports/figures/api_load_test.png)
+
 ### Question 26
 
 > **Did you manage to implement monitoring of your deployed model? If yes, explain how it works. If not, explain how**
@@ -708,6 +703,7 @@ We did not implement monitoring of the deployed model in this project. Due to ti
 the assignment, we prioritized building a complete and reproducible MLOps pipeline, including data versioning, continuous
 integration, training, and cloud deployment. While monitoring is an important component of production-grade systems,
 it was considered out of scope for the main learning objectives of the project.
+
 ## Overall discussion of project
 
 > In the following section we would like you to think about the general structure of your project.
@@ -737,6 +733,7 @@ Overall, working in the cloud was a very positive experience. It enabled us to p
 scalable and reproducible way without worrying about local hardware limitations. At the same time, this project
 highlighted the importance of cost awareness: even small experiments can generate expenses if resources are not managed
 carefully.
+
 ### Question 28
 
 > **Did you implement anything extra in your project that is not covered by other questions? Maybe you implemented**
@@ -752,6 +749,18 @@ carefully.
 > Answer:
 
 --- question 28 fill here ---
+Yes, we implemented additional practices focused on code quality and team collaboration.
+We enforced GitHub branch protection rules on the main branch, requiring pull requests, code reviews, and passing checks before merging.
+
+To manage and track work effectively, we used GitHub Projects (Kanban board) to organize tasks into the following stages:
+
+* `Backlog`
+* `Ready`
+* `In progress`
+* `In review`
+* `Done`
+
+This helped us coordinate development, prioritize tasks, and maintain steady progress throughout the project.
 
 ### Question 29
 
@@ -826,6 +835,7 @@ which helped keep progress manageable despite the interdependencies.
 We also spent considerable time on cloud deployment and debugging. Issues related to container architectures, missing
 model files at runtime, and Cloud Run startup failures required iterative debugging using local Docker runs and cloud logs.
 These problems highlighted the importance of validating containers locally and clearly defining runtime assumptions.
+
 ### Question 31
 
 > **State the individual contributions of each team member. This is required information from DTU, because we need to**
@@ -855,6 +865,10 @@ W&B API key) and setting up the cloud-side training/deployment workflow.
 Student **s253759** was in charge of the core scalability and production-facing components of the project,
  including Distributed Data Loading optimization, FastAPI model serving, and Weights & Biases (W&B) experiment tracking.
 This involved implementing a parallelized data pipeline and multi-processing workers to eliminate CPU bottlenecks, as well as developing a RESTful API for real-time inference.
+
+Student **s253055** was in charge of the GitHub repository management and project organization, including setting up and maintaining the repository structure, branching strategy, and branch protection rules (pull requests, reviews, restricted force-pushes). He actively handled issue resolution and bug fixing, reviewed pull requests, and ensured overall codebase stability.
+
+He was also responsible for configuring and maintaining CI/CD pipelines using GitHub Actions, contributing to automated testing and checks. In addition, he worked on API testing and participated in the design, implementation, build, and deployment of the FastAPI service.
 
 Student s252898 developed the FastAPI application, as well as validating its reliability under stress by testing it under load via Locust. They also implemented performance analysis framework using cProfile and Pytorch profiler to diagnose bottlenecks.
 

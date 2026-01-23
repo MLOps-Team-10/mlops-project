@@ -91,8 +91,8 @@ def validate(
         for i, (images, labels) in enumerate(dataloader):
             # LIMIT FOR PROFILING
             if total >= 1000:
-                 logger.debug("Reached validation limit for profiling.")
-                 break
+                logger.debug("Reached validation limit for profiling.")
+                break
 
             images, labels = images.to(device), labels.to(device)
 
@@ -159,7 +159,7 @@ def train(
 
     # Force 1 epoch for profiling if not specified, but respect config
     # We will break early anyway
-    
+
     for epoch in range(epochs):
         logger.info(f"===== Epoch {epoch + 1}/{epochs} =====")
         epoch_start = time.time()
@@ -182,7 +182,7 @@ def train(
             loss.backward()
             optimizer.step()
             preds = logits.argmax(dim=1)
-            
+
             running_loss += loss.item() * images.size(0)
             running_correct += (preds == labels).sum().item()
             running_total += labels.size(0)
@@ -207,7 +207,7 @@ def train(
 
         logger.info(f"Validation loss: {valid_loss:.4f}")
         logger.info(f"Validation accuracy: {valid_acc:.4f}")
-        
+
         # We only need one epoch for profiling usually
         logger.info("Stopping after 1 epoch for profiling.")
         break
@@ -217,16 +217,16 @@ def train(
 def main(cfg: DictConfig) -> None:
     repo_root = Path(get_original_cwd())
     load_dotenv(repo_root / ".env")
-    
+
     logs_dir = repo_root / "logs"
     models_dir = get_models_path(repo_root)
     data_dir = (repo_root / cfg.data.data_dir).resolve()
 
     setup_logging(logs_dir)
-    wandb.init(mode="disabled") # Force disabled for profiling to avoid noise
+    wandb.init(mode="disabled")  # Force disabled for profiling to avoid noise
 
     logger.info("Hydra config:\n" + OmegaConf.to_yaml(cfg))
-    
+
     ensure_eurosat_rgb_cloud(download_root=str(repo_root / "data" / "raw"))
 
     train(

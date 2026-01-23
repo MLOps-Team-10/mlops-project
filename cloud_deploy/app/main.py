@@ -21,6 +21,8 @@ logger.info(f"PORT env = {os.environ.get('PORT', 'not set')}")
 from eurosat_classifier.model import EuroSATModel, ModelConfig
 
 MODEL_PATH = Path(os.getenv("MODEL_PATH", "/app/models/eurosat_best.pth"))
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # --- startup ---
@@ -33,7 +35,6 @@ async def lifespan(app: FastAPI):
     model = EuroSATModel(cfg)
 
     if not MODEL_PATH.exists():
-
         app.state.model = None
         app.state.model_error = f"Model file not found: {MODEL_PATH}"
         yield
@@ -49,8 +50,8 @@ async def lifespan(app: FastAPI):
     yield
 
 
-
 app = FastAPI(lifespan=lifespan)
+
 
 @app.get("/")
 def health():
@@ -60,6 +61,7 @@ def health():
         "model_path": str(MODEL_PATH),
         "model_error": app.state.model_error,
     }
+
 
 @app.post("/predict")
 def predict():
