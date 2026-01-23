@@ -356,7 +356,24 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 >
 > Answer:
 
---- question 11 fill here ---
+We have designed our continuous integration pipeline to be modular, explicit, and aligned with MLOps best practices.
+It is organized into three separate GitHub Actions workflows, each with a clear responsibility: code quality checks, unit
+testing, and deployment/training automation.
+First, we use a Codecheck workflow that runs on every pull request targeting the main branch. This workflow acts as a
+quality gate and focuses on code hygiene and static analysis. It runs pre-commit hooks (e.g. whitespace checks, YAML/TOML
+validation, secret detection), Ruff for formatting and linting, and Mypy for static type checking.
+While pre-commit is also executed locally by developers, enforcing it in CI guarantees consistency across contributors
+and environments.
+Second, we maintain a dedicated Tests workflow for unit testing. Every test is executed with pytest and are run in a
+matrix setup across multiple operating systems (Ubuntu, Windows, macOS) and multiple Python versions (3.11 and 3.12).
+This ensures that our codebase is portable and behaves consistently across platforms, which is especially important for
+machine learning pipelines that may rely on OS-specific dependencies.
+Third, we have a Train and Deploy workflow triggered on pushes to main. This workflow integrates MLOps-specific steps
+such as pulling data with DVC, building Docker images via Google Cloud Build, submitting training jobs to Vertex AI,
+and deploying a FastAPI inference service.
+Across all workflows, we make extensive use of dependency caching via uv, significantly reducing CI execution time by
+reusing previously resolved dependencies. An example workflow configuration can be found in our repository under
+.github/workflows/codecheck.yaml.
 
 ## Running code and tracking experiments
 
@@ -624,8 +641,15 @@ still letting us run the exact same Docker image locally and in the cloud.
 >
 > Answer:
 
---- question 25 fill here ---
+Yes, we performed unit testing of the core components using pytest. Our tests cover both “pure” model behavior and
+pipeline integration points. For example, we test that EuroSATModel can be instantiated and produces logits of the expected
+shape on a dummy input batch (sanity check for forward pass). We also test the data pipeline by validating that get_dataloaders()
+returns valid DataLoader objects and yields correctly shaped tensors. Where the real EuroSAT dataset may not be present in CI,
+the test is designed to skip safely rather than fail. In addition, we added a training-related unit test that uses monkeypatching
+to replace heavy components (real dataloaders, optimizer, validation) and verifies that the training loop correctly saves
+the “best” checkpoint (eurosat_best.pth).
 
+---api test---
 ### Question 26
 
 > **Did you manage to implement monitoring of your deployed model? If yes, explain how it works. If not, explain how**
@@ -658,8 +682,18 @@ still letting us run the exact same Docker image locally and in the cloud.
 >
 > Answer:
 
---- question 27 fill here ---
+During the project we relied almost entirely on the free Google Cloud credits provided for the course.
+According to the final cost breakdown, the total gross cloud usage amounted to approximately $1.78, which was fully
+offset by savings and credits, resulting in $0.00 of actual charges.
+The service with the highest nominal cost was Cloud Storage (about $1.17), mainly due to storing datasets and model
+artifacts. Other services such as Vertex AI, Cloud Build, Artifact Registry, Compute Engine, and Cloud Run contributed
+only marginally to the overall cost, each remaining well below one dollar. Vertex AI incurred some usage due to training
+experiments, while Cloud Build and Artifact Registry were used for containerized training and deployment workflows.
 
+Overall, working in the cloud was a very positive experience. It enabled us to prototype, train, and deploy models in a
+scalable and reproducible way without worrying about local hardware limitations. At the same time, this project
+highlighted the importance of cost awareness: even small experiments can generate expenses if resources are not managed
+carefully.
 ### Question 28
 
 > **Did you implement anything extra in your project that is not covered by other questions? Maybe you implemented**
@@ -691,7 +725,25 @@ still letting us run the exact same Docker image locally and in the cloud.
 >
 > Answer:
 
---- question 29 fill here ---
+![Figure](figures/graph.svg) The graph summarizes the overall architecture of our system, from local development to cloud training and
+online serving.
+
+We started locally, where we worked in an isolated Python environment managed with uv and kept the project
+configurable using Hydra. Before code is pushed, pre-commit runs hygiene checks and enforces formatting.
+During experimentation, training runs log metrics and configuration to Weights & Biases to ensure traceability and
+reproducibility.
+
+When code is pushed to GitHub or a pull request is opened against main, GitHub Actions runs our CI workflows. We use a
+matrix across Linux, Windows, and macOS, and validate against Python 3.11 and 3.12 to catch platform-specific issues
+early. The CI performs formatting and lint checks using Ruff, runs unit tests with Pytest, and performs static type
+checking with Mypy (kept as a “soft gate” while the codebase evolves). To speed up these repeated checks, we enable
+uv caching, which reduces dependency installation time across jobs and operating systems.
+
+After changes are merged to main, the cloud pipeline is triggered. The dataset is versioned with DVC and stored in
+Google Cloud Storage (GCS); the workflow pulls the required data via dvc pull. We build Docker images with Cloud Build,
+run training on Vertex AI, and produce a “best checkpoint” model artifact. Finally, we package the FastAPI service into
+a container, push it to Artifact Registry, and deploy it to Cloud Run, where users can query the model through an HTTP
+endpoint.
 
 ### Question 30
 
