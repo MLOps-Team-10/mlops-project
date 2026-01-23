@@ -17,7 +17,7 @@ class DataConfig:
     easy to pass them around or serialize them in configs.
     """
 
-    data_dir: str = "data/raw/eurosat/EuroSAT"
+    data_dir: str = "data/raw/eurosat_rgb"
     batch_size: int = 64
     valid_fraction: float = 0.2
     num_workers: int = 4

@@ -179,3 +179,17 @@ cython_debug/
 # Ignore EuroSAT raw data subfolders
 data/raw/eurosat_rgb/
 models/
+/data_zip
+
+# Wandb output
+wandb/
+
+# Output folder
+outputs/**
+
+# Logs and profiler output
+logs/
+
+.dvc/config.local
+.dvc/tmp
+.dvc/cache

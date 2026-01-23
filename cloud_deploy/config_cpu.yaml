@@ -1,0 +1,13 @@
+workerPoolSpecs:
+    machineSpec:
+        machineType: n1-highmem-2
+    replicaCount: 1
+    containerSpec:
+        imageUri: europe-west1-docker.pkg.dev/mlops-exercises-484210/gpu_cloud_storage_and_saving:latest
+        env:
+        - name: WANDB_API_KEY
+          value: $WANDB_API_KEY
+        - name: WANDB_PROJECT
+          value: mlops-project
+        - name: WANDB_ENTITY
+          value: s252840-danmarks-tekniske-universitet-dtu

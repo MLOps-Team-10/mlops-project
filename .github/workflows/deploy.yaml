@@ -1,0 +1,62 @@
+name: Train and Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  run-pipeline:
+    name: Run Train and Deploy pipeline
+    runs-on: ${{ matrix.os }}
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_KEY_HENRY }}
+    strategy:
+      fail-fast: true
+      matrix:
+        # os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
+        python-version: ["3.12"]
+    steps:
+      # Check out code
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      # Authenticate to Google Cloud
+      # This step creates a temporary credentials file from your Secret
+      # and sets GOOGLE_APPLICATION_CREDENTIALS env var automatically.
+      - name: Auth with GCP
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+
+      # Setup UV
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      # Add DVC package
+      - name: Install DVC
+        run: uv add dvc dvc-gs
+
+      # Install dependencies
+      - name: Install dependencies
+        run: uv sync --dev --locked
+
+      # Pull Data (DVC automatically sees the auth from Step 2)
+      - name: Pull Data
+        run: uv run dvc pull --no-run-cache
+
+      # Set up Cloud SDK
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      # Build & push training Docker image to Artifact Registry
+      - name: Build and push training image (Cloud Build)
+        run: gcloud builds submit . --config=cloud_deploy/cloudbuild.yaml
+
+      # Submit Vertex AI training job using built image
+      - name: Submit Vertex AI training job
+        run: gcloud builds submit . --config=cloud_deploy/vertex_ai_train.yaml --ignore-file=.deployignore
