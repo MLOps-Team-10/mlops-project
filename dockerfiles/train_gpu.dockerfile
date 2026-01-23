@@ -23,7 +23,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 COPY README.md .
 COPY src/ src/
 COPY .dvc/ .dvc/
-COPY data_zip.dvc data_zip.dvc
+
 
 # --- runtime config ---
 RUN uv run dvc config core.no_scm true
