@@ -663,8 +663,10 @@ the “best” checkpoint (eurosat_best.pth).
 >
 > Answer:
 
---- question 26 fill here ---
-
+We did not implement monitoring of the deployed model in this project. Due to time constraints and the overall scope of
+the assignment, we prioritized building a complete and reproducible MLOps pipeline, including data versioning, continuous
+integration, training, and cloud deployment. While monitoring is an important component of production-grade systems,
+it was considered out of scope for the main learning objectives of the project.
 ## Overall discussion of project
 
 > In the following section we would like you to think about the general structure of your project.
