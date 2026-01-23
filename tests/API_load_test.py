@@ -1,5 +1,3 @@
-import random
-import os
 from locust import HttpUser, between, task
 
 
@@ -21,4 +19,4 @@ class MyUser(HttpUser):
 
         with open(image_path, "rb") as image_file:
             files = {"file": ("Highway_1.jpg", image_file, "image/jpeg")}
-            self.client.post("/takeaguess", files=files)
+            self.client.post("/predict", files=files)

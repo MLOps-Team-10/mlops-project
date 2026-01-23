@@ -36,5 +36,11 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev --locked
 
-      - name: Run pytest
-        run: uv run pytest -q
+      # Run standard unit tests (excluding the API tests if you want to separate them,
+      # otherwise this runs everything including apitests)
+      - name: Run Unit Tests
+        run: uv run pytest -q --ignore=tests/apitests
+
+      # Run the API Integration Tests
+      - name: Run API Tests
+        run: uv run pytest tests/apitests/test_apis.py
