@@ -63,7 +63,7 @@ will check the repositories and the code to verify your answers.
 * [x] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
 * [x] Do a bit of code typing and remember to document essential parts of your code (M7)
 * [x] Setup version control for your data or part of your data (M8)
-* [ ] Add command line interfaces and project commands to your code where it makes sense (M9)
+* [x] Add command line interfaces and project commands to your code where it makes sense (M9)
 * [x] Construct one or multiple docker files for your code (M10)
 * [x] Build the docker files locally and make sure they work as intended (M10)
 * [x] Write one or multiple configurations files for your experiments (M11)
@@ -102,7 +102,7 @@ will check the repositories and the code to verify your answers.
 * [ ] Instrument your API with a couple of system metrics (M28)
 * [ ] Setup cloud monitoring of your instrumented application (M28)
 * [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
-* [ ] If applicable, optimize the performance of your data loading using distributed data loading (M29)
+* [x] If applicable, optimize the performance of your data loading using distributed data loading (M29)
 * [ ] If applicable, optimize the performance of your training pipeline by using distributed training (M30)
 * [ ] Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
 
@@ -133,7 +133,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
-s253114, s252840, s252898 , s253759
+s253114, s252840, s252898, s253055, s253759
 
 ### Question 3
 > **A requirement to the project is that you include a third-party package not covered in the course. What framework**
@@ -178,14 +178,13 @@ ensuring full reproducibility across machines and platforms.
 The development workflow is fully deterministic, so a new team member can obtain an exact copy of the environment by following a small number of steps.
 First, they clone the repository. Then, after installing uv, they simply run:
 
-'''bash
+```bash
 uv sync --dev --locked
-'''
+```
 
 This command creates a virtual environment and installs exactly the versions specified in the lockfile, guaranteeing that everyone works with the same dependency set.
 No manual version management is required.
-Additionally, we use uv run to execute tools such as pytest, ruff, mypy, and coverage inside the managed environment,
-avoiding reliance on global Python installations.
+Additionally, we use `uv run` to execute tools such as pytest, ruff, mypy, and coverage inside the managed environment, avoiding reliance on global Python installations.
 
 ### Question 5
 
@@ -202,17 +201,16 @@ avoiding reliance on global Python installations.
 > Answer:
 
 We initialized the project using the provided cookiecutter template, which already contained the full Python package
-structure under the src/ directory, including files such as train, evaluate, and prediction scripts. We did not alter
+structure under the `src/` directory, including files such as `train.py`, `evaluate.py`, and prediction scripts. We did not alter
 this core structure, but instead filled in the existing Python modules with our own implementation, replacing the placeholder
 logic with fully functional code for data loading, training, evaluation, and inference.
 
 In addition to the template, we extended the project structure where required by the assignment and by MLOps best practices.
-We created the .github/workflows directory to define GitHub Actions pipelines for linting, type checking, testing, and
-coverage reporting, as this was not included in the original template. We also added a data/ directory to manage datasets,
-a docs/ folder for documentation, and a cloud_deploy/ folder to support deployment-related artifacts.
+We extended the `.github/workflows` directory to define GitHub Actions pipelines for linting, type checking, testing, and
+coverage reporting, as this was not included in the original template. We also added a `data/` directory to manage datasets and a `cloud_deploy/` folder to support deployment-related artifacts.
 
-Some directories were generated automatically by tools we adopted, such as lightning_logs for PyTorch Lightning training
-logs, outputs/ for Hydra experiment outputs, and reports/ for project deliverables and evaluation artifacts.
+Some directories were generated automatically by tools we adopted, such as `lightning_logs/` for PyTorch Lightning training
+logs and `outputs/` for Hydra experiment outputs.
 
 ### Question 6
 
@@ -228,17 +226,16 @@ logs, outputs/ for Hydra experiment outputs, and reports/ for project deliverabl
 > Answer:
 
 We enforced several rules for code quality, formatting, typing, and documentation throughout the project.
-For code style and linting, we used Ruff, which allowed us to apply consistent formatting and detect common programming  
-errors early. Ruff was run both locally and in the CI pipeline to ensure the same standards were enforced across the team.
-Formatting was handled automatically to avoid style discussions and reduce noise in code reviews.
-For typing, we used Mypy to perform static type checking. While not all third-party libraries provide full type hints,
+To ensure these standards were applied consistently, we used **pre-commit** to automatically run checks before each commit,
+preventing non-compliant code from entering the repository.
+
+For code style and linting, we used **Ruff**, which allowed us to apply consistent formatting and detect common programming
+errors early. Ruff was executed both via pre-commit hooks and in the CI pipeline to guarantee the same standards were enforced
+locally and in automated checks. Formatting was handled automatically to avoid style discussions and reduce noise in code reviews.
+
+For typing, we used **Mypy** to perform static type checking. While not all third-party libraries provide full type hints,
 Mypy still helped us catch mismatched function signatures, invalid assumptions about data structures, and unintended None
-usage early in development. Type checking was included in CI to prevent regressions.
-Documentation was handled through docstrings and a dedicated docs/ folder, ensuring that training, evaluation, and data
-handling logic is understandable for new contributors.
-These concepts are crucial in larger projects because they scale human collaboration. Consistent formatting improves
-readability, typing reduces runtime errors and misunderstandings, and documentation lowers the onboarding cost for new
-team members while improving long-term maintainability.
+usage early in development. Type checking was also integrated into pre-commit and CI to prevent regressions.
 
 ## Version control
 
@@ -257,13 +254,11 @@ team members while improving long-term maintainability.
 >
 > Answer:
 
-In total we implemented 4 tests. The first test validates the training workflow by mocking the model, dataloaders and
-validation step, and checks that the best checkpoint is saved (i.e., eurosat_best.pth is written when validation improves).
-The second test covers the model forward pass, ensuring EuroSATModel can be instantiated and produces logits with the
-expected shape for typical EuroSAT inputs. The third test verifies the data pipeline, checking that get_dataloaders returns
-non-empty DataLoaders and yields correctly shaped RGB batches, skipping gracefully if the dataset is not available.
-The fourth and last test checks the API's capability to perform under heavy load using Locust, which simulates a swarm of
-users simultaneously sending mainly POST requests to the server.
+In total, we implemented five test files. The primary focus is on the most critical parts of the application: the training pipeline, the model, and the data pipeline.
+The first test file validates the training workflow by mocking the model, data loaders, and validation step, and verifies that the best checkpoint is correctly saved (i.e., `eurosat_best.pth` is written when validation improves).
+The second test file covers the model forward pass, ensuring that `EuroSATModel` can be instantiated and produces logits with the expected shape for typical EuroSAT inputs.
+The third test file verifies the data pipeline, checking that `get_dataloaders` returns non-empty DataLoader objects and yields correctly shaped RGB batches, while gracefully skipping execution if the dataset is not available.
+In addition to core ML components, we also tested the service layer. One test file focuses on API load testing using Locust, while another validates the API functionality itself using FastAPI’s TestClient, ensuring correct behavior and integration of the exposed endpoints.
 
 ### Question 8
 
@@ -312,11 +307,11 @@ coverage as a feedback metric to find untested areas, not as proof of correctnes
 >
 > Answer:
 
-Yes, our workflow relied on feature branches + pull requests. Each change was developed on a dedicated branch (e.g., feat/eurosat)
+Yes, our workflow relied on feature branches + pull requests. Each change was developed on a dedicated branch (e.g., `feat/api-tests`)
 instead of committing directly to main. When a feature was ready, we opened a PR targeting main, which acted as the main
 integration point and protected branch for stable code.
 PRs triggered our CI checks to catch issues early and consistently. In particular, we ran Codecheck on PRs to main
-(pre-commit hygiene, Ruff formatting/linting, and “soft” mypy), and a separate Tests workflow to run the unit test matrix
+(pre-commit hygiene, Ruff formatting/linting, and mypy), and a separate Tests workflow to run the unit test matrix
 across OSes and Python versions. This gave fast feedback before merging and helped prevent formatting regressions, obvious
 lint violations, and breaking tests from entering main.
 Branches and PRs improved version control by keeping main clean and deployable, making changes reviewable, and allowing
@@ -336,7 +331,7 @@ us to iterate safely without destabilizing the shared codebase.
 > Answer:
 
 Yes, we used DVC to manage datasets in our project.
-Instead of committing large data files directly to Git, we tracked them with DVC, while storing the actual data in a remote Google Cloud Bucket : this allowed us to version datasets in a Git-like way without bloating the repository.
+Instead of committing large data files directly to Git, we tracked them with DVC, while storing the actual data in a remote Google Cloud Bucket: this allowed us to version datasets in a Git-like way without bloating the repository.
 DVC improved our project in several ways. First, it ensured reproducibility: every experiment and training run could be
 associated with a specific data version, making results traceable and comparable over time. Second, it enabled team
 collaboration, as all team members could pull the exact same dataset version using dvc pull, avoiding inconsistencies
@@ -358,24 +353,15 @@ before training or evaluation, ensuring that pipelines always ran on the correct
 >
 > Answer:
 
-We have designed our continuous integration pipeline to be modular, explicit, and aligned with MLOps best practices.
-It is organized into three separate GitHub Actions workflows, each with a clear responsibility: code quality checks, unit
-testing, and deployment/training automation.
-First, we use a Codecheck workflow that runs on every pull request targeting the main branch. This workflow acts as a
-quality gate and focuses on code hygiene and static analysis. It runs pre-commit hooks (e.g. whitespace checks, YAML/TOML
-validation, secret detection), Ruff for formatting and linting, and Mypy for static type checking.
-While pre-commit is also executed locally by developers, enforcing it in CI guarantees consistency across contributors
-and environments.
-Second, we maintain a dedicated Tests workflow for unit testing. Every test is executed with pytest and are run in a
-matrix setup across multiple operating systems (Ubuntu, Windows, macOS) and multiple Python versions (3.11 and 3.12).
-This ensures that our codebase is portable and behaves consistently across platforms, which is especially important for
-machine learning pipelines that may rely on OS-specific dependencies.
-Third, we have a Train and Deploy workflow triggered on pushes to main. This workflow integrates MLOps-specific steps
-such as pulling data with DVC, building Docker images via Google Cloud Build, submitting training jobs to Vertex AI,
-and deploying a FastAPI inference service.
-Across all workflows, we make extensive use of dependency caching via uv, significantly reducing CI execution time by
-reusing previously resolved dependencies. An example workflow configuration can be found in our repository under
-.github/workflows/codecheck.yaml.
+We designed our continuous integration (CI) pipeline to be **modular, explicit, and aligned with MLOps best practices**, using GitHub Actions as the orchestration platform. The pipeline is structured into multiple workflows, each with a clear and focused responsibility: **code quality enforcement**, **testing**, and **training/deployment automation**.
+
+At the **code quality level**, we run automated linting, formatting, hygiene checks, and static analysis. For branch pushes (excluding `main`), a lightweight *Linting* workflow performs fast **Ruff format and lint checks** to provide immediate developer feedback. For pull requests targeting the `main` branch, a stricter *Codecheck* workflow acts as a quality gate. It executes **pre-commit hooks** (e.g. whitespace checks, YAML/TOML validation, merge marker detection, secret scanning), **Ruff** for formatting and linting, and **Mypy** for static type checking. While pre-commit is also run locally by developers, enforcing it in CI guarantees consistency across contributors and environments. Mypy is currently configured as a non-blocking check to avoid slowing development while the codebase evolves.
+
+At the **testing level**, we use a dedicated *Tests* workflow triggered on pull requests to `main`. Tests are executed with **pytest** in a matrix setup across **multiple operating systems** (Ubuntu and macOS) and **multiple Python versions** (3.11 and 3.12). Unit tests and API integration tests are run separately to keep failures localized and easier to diagnose, ensuring correctness across platforms.
+
+Finally, on pushes to `main`, a *Train and Deploy* workflow handles MLOps-specific steps: pulling data with **DVC**, building Docker images with **Google Cloud Build**, submitting training jobs to **Vertex AI**, and deploying a **FastAPI** inference service.
+
+Across all workflows, we make extensive use of **dependency caching via `uv`**, significantly reducing CI execution time. An example configuration can be found in `.github/workflows/codecheck.yaml`.
 
 ## Running code and tracking experiments
 
@@ -394,7 +380,17 @@ reusing previously resolved dependencies. An example workflow configuration can 
 >
 > Answer:
 
---- question 12 fill here ---
+We configured experiments using Hydra with YAML-based configuration files. A main `config.yaml` defines defaults for data,
+model, and training, which are composed at runtime. The experiment entry point is decorated with `@hydra.main`, allowing
+configuration overrides directly from the command line.
+For example, an experiment can be run as:
+
+```sh
+uv run python src/eurosat_classifier/train.py training.learning_rate=1e-3 training.epochs=20
+```
+
+Hydra automatically loads and merges the configurations, enabling clean experiment management without modifying code while
+supporting scalable experimentation.
 
 ### Question 13
 
@@ -409,7 +405,15 @@ reusing previously resolved dependencies. An example workflow configuration can 
 >
 > Answer:
 
---- question 13 fill here ---
+To ensure reproducibility, we relied on Hydra's configuration management and experiment tracking behavior.
+All hyperparameters and experiment settings are defined in version-controlled YAML config files
+(e.g. [config.yaml](../src/eurosat_classifier/conf/config.yaml), [training/default.yaml](../src/eurosat_classifier/conf/training/default.yaml)).
+When an experiment is launched, Hydra resolves the full configuration and stores it together with logs and outputs, ensuring that no information is lost.
+
+Each run is fully defined by its resolved config, meaning that results are not dependent on hardcoded values or hidden parameters.
+Since configurations are immutable during execution, accidental changes are avoided.
+To reproduce an experiment, one only needs the exact config files (or the overridden parameters) and the same code version.
+By rerunning the experiment with the same command-line overrides, the training setup and results can be reliably reproduced across machines and over time.
 
 ### Question 14
 
@@ -447,7 +451,6 @@ performance rather than only optimizing for training behavior.
 
 ![wandb](figures/W&B.png)
 
-
 ### Question 15
 
 > **Docker is an important tool for creating containerized applications. Explain how you used docker in your**
@@ -463,7 +466,7 @@ performance rather than only optimizing for training behavior.
 
 We used Docker to ensure a reproducible runtime for both local runs and cloud training. In particular, we built a GPU-enabled
 training image that bundles our source code, pinned Python dependencies, and the CUDA-compatible PyTorch stack. This removed
-“works on my machine” issues and made it straightforward to run the same training entrypoint locally, in CI, and on GCP.
+"works on my machine" issues and made it straightforward to run the same training entrypoint locally, in CI, and on GCP.
 
 For cloud training we used the image as a **custom container** for Vertex AI. The container is built in Google Cloud Build
 and pushed to Artifact Registry, after which a Vertex AI CustomJob launches the container on a GPU machine and executes our
@@ -538,10 +541,10 @@ instead).
 >
 > Answer:
 
-We explored Compute Engine early in the project to understand the VM workflow and to validate that our training setup
-could run on GCP-managed hardware. We tested two approaches: a “plain VM” workflow where we SSH’ed into the instance,
-cloned the repository, created the environment, and ran smoke tests to ensure the training entrypoint could start,
-access the dataset, and write outputs; and a containerized workflow where we pulled/built and ran our Docker-based
+We explored **Compute Engine** early in the project to understand the VM workflow and to validate that our training setup
+could run on GCP-managed hardware. We tested two approaches: a "plain VM" workflow where we SSH'ed into the instance,
+**cloned the repository**, created the environment, and ran smoke tests to ensure the training entrypoint could start,
+access the dataset, and write outputs; and a containerized workflow where we pulled/built and ran our **Docker-based**
 training setup to verify dependency and runtime consistency.
 
 We briefly used low-cost standard CPU VMs for quick validation and then experimented with a GPU VM using an
@@ -567,7 +570,7 @@ Cloud Build and Artifact Registry, so Compute Engine remained an exploration ste
 >
 > Answer:
 
-![Docker images](figures/artfiacts.png)
+![list of docker images](figures/artifacts_general_view.png)
 
 ### Question 21
 
@@ -648,10 +651,14 @@ Interactive Documentation (Swagger UI): Users can navigate to the /docs endpoint
 Thanks to the Annotated parameters in the code, the UI provides a user-friendly "Try it out" button and a file upload prompt for testing predictions directly.
 CLI/REST Clients: The service is invoked via a POST request to the /predict endpoint.
 To invoke the service an user would call:
-curl -X 'POST' 'https://eurosat-api-abc123.a.run.app/predict' \
-     -H 'accept: application/json' \
-     -H 'Content-Type: multipart/form-data' \
-     -F 'file=@satellite_view.png'
+
+```bash
+curl -X POST \
+  https://eurosat-fast-api-1016331340552.europe-west1.run.app/predict \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@AnnualCrop_2.jpg"
+```
 
 ### Question 25
 
@@ -674,8 +681,11 @@ the test is designed to skip safely rather than fail. In addition, we added a tr
 to replace heavy components (real dataloaders, optimizer, validation) and verifies that the training loop correctly saves
 the “best” checkpoint (eurosat_best.pth).
 
-We used Locust to simulate high user traffic. The results confirm the server handles at least 100,000 concurrent users. The current bottleneck is caused by  saturation of our machines sending the requests, not the server itself. Actual capacity will depend on cloud resource allocation and user wait times.
+We used Locust to simulate high user traffic. The results confirm the server handles at least 100,000 concurrent users.
+The current bottleneck is caused by  saturation of our machines sending the requests, not the server itself.
+Actual capacity will depend on cloud resource allocation and user wait times.
 ![Load_test](reports/figures/api_load_test.png)
+
 ### Question 26
 
 > **Did you manage to implement monitoring of your deployed model? If yes, explain how it works. If not, explain how**
@@ -693,6 +703,7 @@ We did not implement monitoring of the deployed model in this project. Due to ti
 the assignment, we prioritized building a complete and reproducible MLOps pipeline, including data versioning, continuous
 integration, training, and cloud deployment. While monitoring is an important component of production-grade systems,
 it was considered out of scope for the main learning objectives of the project.
+
 ## Overall discussion of project
 
 > In the following section we would like you to think about the general structure of your project.
@@ -722,6 +733,7 @@ Overall, working in the cloud was a very positive experience. It enabled us to p
 scalable and reproducible way without worrying about local hardware limitations. At the same time, this project
 highlighted the importance of cost awareness: even small experiments can generate expenses if resources are not managed
 carefully.
+
 ### Question 28
 
 > **Did you implement anything extra in your project that is not covered by other questions? Maybe you implemented**
@@ -737,6 +749,18 @@ carefully.
 > Answer:
 
 --- question 28 fill here ---
+Yes, we implemented additional practices focused on code quality and team collaboration.
+We enforced GitHub branch protection rules on the main branch, requiring pull requests, code reviews, and passing checks before merging.
+
+To manage and track work effectively, we used GitHub Projects (Kanban board) to organize tasks into the following stages:
+
+* `Backlog`
+* `Ready`
+* `In progress`
+* `In review`
+* `Done`
+
+This helped us coordinate development, prioritize tasks, and maintain steady progress throughout the project.
 
 ### Question 29
 
@@ -811,6 +835,7 @@ which helped keep progress manageable despite the interdependencies.
 We also spent considerable time on cloud deployment and debugging. Issues related to container architectures, missing
 model files at runtime, and Cloud Run startup failures required iterative debugging using local Docker runs and cloud logs.
 These problems highlighted the importance of validating containers locally and clearly defining runtime assumptions.
+
 ### Question 31
 
 > **State the individual contributions of each team member. This is required information from DTU, because we need to**
@@ -840,6 +865,10 @@ W&B API key) and setting up the cloud-side training/deployment workflow.
 Student **s253759** was in charge of the core scalability and production-facing components of the project,
  including Distributed Data Loading optimization, FastAPI model serving, and Weights & Biases (W&B) experiment tracking.
 This involved implementing a parallelized data pipeline and multi-processing workers to eliminate CPU bottlenecks, as well as developing a RESTful API for real-time inference.
+
+Student **s253055** was in charge of the GitHub repository management and project organization, including setting up and maintaining the repository structure, branching strategy, and branch protection rules (pull requests, reviews, restricted force-pushes). He actively handled issue resolution and bug fixing, reviewed pull requests, and ensured overall codebase stability.
+
+He was also responsible for configuring and maintaining CI/CD pipelines using GitHub Actions, contributing to automated testing and checks. In addition, he worked on API testing and participated in the design, implementation, build, and deployment of the FastAPI service.
 
 Student s252898 developed the FastAPI application, as well as validating its reliability under stress by testing it under load via Locust. They also implemented performance analysis framework using cProfile and Pytorch profiler to diagnose bottlenecks.
 

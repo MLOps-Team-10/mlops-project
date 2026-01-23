@@ -16,17 +16,17 @@ from omegaconf import DictConfig, OmegaConf
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
-# Add src to sys.path to ensure imports work if not installed
-# This is a fallback, though uv run usually handles it if installed
-src_path = Path(__file__).resolve().parent.parent / "src"
-if str(src_path) not in sys.path:
-    sys.path.insert(0, str(src_path))
-
 from eurosat_classifier.data import get_dataloaders, DataConfig
 from eurosat_classifier.model import EuroSATModel, ModelConfig
 from eurosat_classifier.scripts.download_data import ensure_eurosat_rgb_cloud
 import wandb
 from dotenv import load_dotenv
+
+# Add src to sys.path to ensure imports work if not installed
+# This is a fallback, though uv run usually handles it if installed
+src_path = Path(__file__).resolve().parent.parent / "src"
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
 
 
 def setup_logging(logs_dir: Path) -> None:
@@ -91,8 +91,8 @@ def validate(
         for i, (images, labels) in enumerate(dataloader):
             # LIMIT FOR PROFILING
             if total >= 1000:
-                 logger.debug("Reached validation limit for profiling.")
-                 break
+                logger.debug("Reached validation limit for profiling.")
+                break
 
             images, labels = images.to(device), labels.to(device)
 
@@ -155,11 +155,9 @@ def train(
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     models_dir.mkdir(parents=True, exist_ok=True)
 
-    best_valid_acc = 0.0
-
     # Force 1 epoch for profiling if not specified, but respect config
     # We will break early anyway
-    
+
     for epoch in range(epochs):
         logger.info(f"===== Epoch {epoch + 1}/{epochs} =====")
         epoch_start = time.time()
@@ -182,7 +180,7 @@ def train(
             loss.backward()
             optimizer.step()
             preds = logits.argmax(dim=1)
-            
+
             running_loss += loss.item() * images.size(0)
             running_correct += (preds == labels).sum().item()
             running_total += labels.size(0)
@@ -207,7 +205,7 @@ def train(
 
         logger.info(f"Validation loss: {valid_loss:.4f}")
         logger.info(f"Validation accuracy: {valid_acc:.4f}")
-        
+
         # We only need one epoch for profiling usually
         logger.info("Stopping after 1 epoch for profiling.")
         break
@@ -217,16 +215,16 @@ def train(
 def main(cfg: DictConfig) -> None:
     repo_root = Path(get_original_cwd())
     load_dotenv(repo_root / ".env")
-    
+
     logs_dir = repo_root / "logs"
     models_dir = get_models_path(repo_root)
     data_dir = (repo_root / cfg.data.data_dir).resolve()
 
     setup_logging(logs_dir)
-    wandb.init(mode="disabled") # Force disabled for profiling to avoid noise
+    wandb.init(mode="disabled")  # Force disabled for profiling to avoid noise
 
     logger.info("Hydra config:\n" + OmegaConf.to_yaml(cfg))
-    
+
     ensure_eurosat_rgb_cloud(download_root=str(repo_root / "data" / "raw"))
 
     train(

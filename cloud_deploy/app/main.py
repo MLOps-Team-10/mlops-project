@@ -10,6 +10,8 @@ import os
 import sys
 from loguru import logger
 
+from eurosat_classifier.model import EuroSATModel, ModelConfig
+
 logger.remove()
 logger.add(sys.stderr, level="INFO")
 
@@ -18,9 +20,10 @@ logger.info(f"PYTHONPATH = {os.environ.get('PYTHONPATH')}")
 logger.info(f"Files in /app: {os.listdir('/app')}")
 logger.info(f"Files in /app/app: {os.listdir('/app/app') if os.path.exists('/app/app') else 'missing'}")
 logger.info(f"PORT env = {os.environ.get('PORT', 'not set')}")
-from eurosat_classifier.model import EuroSATModel, ModelConfig
 
 MODEL_PATH = Path(os.getenv("MODEL_PATH", "/app/models/eurosat_best.pth"))
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # --- startup ---
@@ -33,7 +36,6 @@ async def lifespan(app: FastAPI):
     model = EuroSATModel(cfg)
 
     if not MODEL_PATH.exists():
-
         app.state.model = None
         app.state.model_error = f"Model file not found: {MODEL_PATH}"
         yield
@@ -49,8 +51,8 @@ async def lifespan(app: FastAPI):
     yield
 
 
-
 app = FastAPI(lifespan=lifespan)
+
 
 @app.get("/")
 def health():
@@ -60,6 +62,7 @@ def health():
         "model_path": str(MODEL_PATH),
         "model_error": app.state.model_error,
     }
+
 
 @app.post("/predict")
 def predict():
